@@ -10,44 +10,30 @@
 module Main where
 
 import Prelude hiding (id)
-import qualified Prelude
+import qualified Prelude ()
 import Servant
 import Servant.Docs (ToSample, toSamples, ToParam, toParam, ToCapture, toCapture, singleSample, DocCapture(DocCapture), DocQueryParam(DocQueryParam), ParamKind(Normal), markdown, docs)
-import Data.Aeson (ToJSON)
-import GHC.Generics (Generic, to, from)
+import Data.Aeson (ToJSON, toJSON, (.=), object, FromJSON, parseJSON, Value(Object), (.:))
+import GHC.Generics (Generic)
 import Network.Wai.Handler.Warp (run)
-import Data.Foldable (find)
-import Data.Maybe (fromJust, listToMaybe)
+import Data.Maybe (listToMaybe)
 import Data.UUID.V4 (nextRandom)
-import Data.UUID (nil, fromString, toASCIIBytes)
+import Data.UUID (nil, toASCIIBytes)
 import Data.UUID.Types (UUID)
 import qualified  Data.ByteString.Lazy.Char8 as LazyByteString (ByteString)
-import Data.ByteString.Lazy.Char8 (pack)
-import Test.QuickCheck (arbitrary, Arbitrary, elements, sample, Gen) 
+import Test.QuickCheck (arbitrary, Arbitrary, elements, sample) 
 import Test.QuickCheck.Instances
 import Agda.Utils.Maybe (caseMaybeM)
-import qualified Data.ByteString as ByteString (ByteString)
-import Database.PostgreSQL.Simple (query, query_, execute, execute_, connect, close, Connection, FromRow, ToRow, ConnectInfo, defaultConnectInfo, Only (Only))
+import Database.PostgreSQL.Simple (query, query_, execute, execute_, connect, close, Connection, FromRow, ToRow, ConnectInfo, defaultConnectInfo)
 import Database.PostgreSQL.Simple.ToField (ToField, toField, Action(Many, Escape))
 import Database.PostgreSQL.Simple.ToRow (toRow)
-import Control.Exception (bracket)
-import Control.Monad (void, liftM4)
+import Control.Monad (void, liftM4, liftM3)
 import Control.Monad.IO.Class (liftIO)
+import Control.Applicative (empty)
 import Data.Pool (Pool, createPool, withResource)
-
+import Data.Function.Flip (flip4)
 
 -- DATA TYPES
-
-
-newtype HelloWorld = HelloWorld String
-
-instance ToSample HelloWorld where toSamples _ = singleSample hello
-
-instance MimeRender PlainText HelloWorld where 
-  mimeRender _ (HelloWorld x) = pack x
-
-hello :: HelloWorld
-hello = HelloWorld "hello world"
 
 data Todo = Todo {
   id :: UUID,
@@ -56,12 +42,27 @@ data Todo = Todo {
   marked :: Bool
 } deriving (Eq, Show, Generic)
 
+newtype NewTodo = NewTodo (UUID ->Todo) deriving (Generic)
+
+instance Arbitrary Todo where
+  arbitrary = liftM4 Todo arbitrary (elements ["Sill", "Dill", "Färskpotatis", 
+    "Gräddfil", "Snaps"]) arbitrary arbitrary
+
+-- SERVER
+
+type TodoApi = "todos"      :> QueryParam "active" Bool         :> Get  '[JSON]      [Todo]
+          :<|> "todo"       :> Capture "id" UUID             :> Get  '[JSON]      Todo
+          :<|> "newTodo"    :> ReqBody '[JSON] (UUID ->Todo) :> PostNoContent
+          :<|> "updateTodo" :> ReqBody '[JSON] Todo          :> PostNoContent
+
+instance ToJSON Todo
+instance FromJSON Todo
 
 instance ToParam (QueryParam "active" Bool) where
   toParam _ = DocQueryParam  
     "active"  
     ["true", "false"]
-    "Completion status of todos." 
+    "Activity status of the todos." 
     Normal
 
 instance ToSample Todo where 
@@ -72,30 +73,22 @@ instance ToCapture (Capture "id" UUID) where
     "id"                                
     "identification of todo"
 
-instance ToField Todo where
-  toField Todo{..} = Many [toField id, toField text, toField active, toField
-    marked]
+instance ToSample (UUID ->Todo) where
+  toSamples _ = singleSample $ \id ->Todo id "Sill" True False
 
-instance ToJSON Todo
+instance ToJSON (UUID -> Todo) where
+  toJSON newTodo = object ["text" .= text, "active" .= active, "marked" .= marked]
+    where Todo{..} = newTodo nil
 
-instance FromRow Todo
-
-instance ToRow Todo
-
-instance Arbitrary Todo where
-  arbitrary = liftM4 Todo arbitrary (elements ["Sill", "Dill", "Färskpotatis", 
-    "Gräddfil", "Snaps"]) arbitrary arbitrary
-
--- SERVER
-
-type TodoApi =  Get '[PlainText] HelloWorld
-          :<|> "todos" :> QueryParam "active" Bool :> Get '[JSON] [Todo]
-          :<|> "todo" :> Capture "id" UUID :> Get '[JSON] Todo
+instance FromJSON (UUID -> Todo) where
+  parseJSON (Object o) = liftM3 (flip4 Todo) (o .: "marked") (o .: "active") (o .: "text")
+  parseJSON _ = empty
 
 server :: Pool Connection -> Server TodoApi
-server pool = return hello                 -- /
-            :<|> getTodosByActivity   -- /todos?active=bool
+server pool =    getTodosByActivity   -- /todos?active=bool
             :<|> getTodoById          -- /todo/:id
+            :<|> postNewTodo          -- /newTodo
+            :<|> postUpdateTodo       -- /updateTodo
   where 
   toHandler = liftIO . withResource pool 
 
@@ -109,7 +102,14 @@ server pool = return hello                 -- /
   getTodoById = handleMaybe . toHandler . flip selectTodoById
     where 
       handleMaybe :: Handler (Maybe Todo) ->Handler Todo
-      handleMaybe m = caseMaybeM m (throwError $ err404 { errBody = "Todo with ID not found." :: LazyByteString.ByteString }) return
+      handleMaybe m = caseMaybeM m (throwError $ err404 { errBody = 
+       "Todo with ID not found." :: LazyByteString.ByteString }) return
+
+  postNewTodo :: (UUID ->Todo) ->Handler NoContent
+  postNewTodo newTodo = toHandler (`insertTodo` newTodo) >> return NoContent
+
+  postUpdateTodo :: Todo ->Handler NoContent
+  postUpdateTodo todo = toHandler (`updateTodo` todo) >> return NoContent
 
 todoAPI :: Proxy TodoApi
 todoAPI = Proxy
@@ -131,8 +131,15 @@ main = do
   -- run server
   run 8080 $ app pool
 
-
 -- DATABASE
+
+instance ToField Todo where
+  toField Todo{..} = Many [toField id, toField text, toField active, toField
+    marked]
+
+instance FromRow Todo
+
+instance ToRow Todo
 
 initConnectionPool :: ConnectInfo -> IO (Pool Connection)
 initConnectionPool info = createPool (connect info) close 2 60 10
@@ -159,7 +166,8 @@ selectCompletedTodos conn = query_ conn "select * from todos where active=False"
 instance ToRow UUID where toRow uuid = [Escape $ toASCIIBytes uuid]
 
 selectTodoById :: Connection ->UUID ->IO (Maybe Todo)
-selectTodoById conn id = listToMaybe <$> query conn "select * from todos where id=?" id
+selectTodoById conn id = listToMaybe <$> query conn 
+  "select * from todos where id=?" id
 
 insertTodo :: Connection ->(UUID -> Todo) ->IO ()
 insertTodo conn todo = void $ nextRandom >>= execute conn 
