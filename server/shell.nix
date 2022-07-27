@@ -4,10 +4,10 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, aeson, Agda, base, bytestring
-      , composition-extra, lib, postgresql-simple, QuickCheck
-      , quickcheck-instances, resource-pool, servant-docs, servant-server
-      , uuid, uuid-types, warp
+  f = { mkDerivation, aeson, Agda, base, bytestring, flippers, lib
+      , postgresql-simple, QuickCheck, quickcheck-instances
+      , resource-pool, servant-docs, servant-server, uuid, uuid-types
+      , wai-cors, warp
       }:
       mkDerivation {
         pname = "lista";
@@ -16,9 +16,9 @@ let
         isLibrary = false;
         isExecutable = true;
         executableHaskellDepends = [
-          aeson Agda base bytestring composition-extra postgresql-simple
-          QuickCheck quickcheck-instances resource-pool servant-docs
-          servant-server uuid uuid-types warp
+          aeson Agda base bytestring flippers postgresql-simple QuickCheck
+          quickcheck-instances resource-pool servant-docs servant-server uuid
+          uuid-types wai-cors warp
         ];
         license = "unknown";
         hydraPlatforms = lib.platforms.none;
