@@ -16,6 +16,7 @@ import Servant.Docs (ToSample, toSamples, ToParam, toParam, ToCapture, toCapture
 import Data.Aeson (ToJSON, toJSON, (.=), object, FromJSON, parseJSON, Value(Object), (.:))
 import GHC.Generics (Generic)
 import Network.Wai.Handler.Warp (run)
+import Network.Wai.Middleware.Cors (corsRequestHeaders, simpleCorsResourcePolicy, cors, corsMethods)
 import Data.Maybe (listToMaybe)
 import Data.UUID.V4 (nextRandom)
 import Data.UUID (nil, toASCIIBytes)
@@ -31,7 +32,7 @@ import Control.Monad (void, liftM4, liftM3)
 import Control.Monad.IO.Class (liftIO)
 import Control.Applicative (empty)
 import Data.Pool (Pool, createPool, withResource)
-import Data.Function.Flip (flip4)
+import Data.Function.Flippers (flip4)
 
 -- DATA TYPES
 
@@ -115,7 +116,12 @@ todoAPI :: Proxy TodoApi
 todoAPI = Proxy
 
 app :: Pool Connection ->Application
-app = serve todoAPI . server 
+app = cors' . serve todoAPI . server 
+  where 
+   cors' = (cors . const) $ Just simpleCorsResourcePolicy  { 
+     corsRequestHeaders = ["Content-Type"], 
+     corsMethods        = ["OPTIONS", "GET", "PUT", "POST"] 
+   }
 
 apiDocs :: String
 apiDocs = markdown $ docs todoAPI
@@ -178,5 +184,5 @@ updateTodo conn Todo{..} = void $ execute conn
   "update todos set id=?, text=?, active=?, marked=? where id=?" (id, text,
   active, marked, id)
 
-deleteTables :: IO ()
+deleteTables :: IO () 
 deleteTables = void $ connect defaultConnectInfo >>= flip execute_"drop table todos"
