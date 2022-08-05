@@ -19,3 +19,6 @@ export function caseOfDefault<A, B>(expr: A, def: B, ...cases: Case<A,B>[]){
  return x ? x : def  
 }
 
+export function caseOfDefaultB<B>(def: B, ...cases: Case<Boolean, B>[]): B {
+  return caseOfDefault(true, def, ...cases)
+}
