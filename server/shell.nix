@@ -6,8 +6,8 @@ let
 
   f = { mkDerivation, aeson, Agda, base, bytestring, flippers, lib
       , postgresql-simple, QuickCheck, quickcheck-instances
-      , resource-pool, servant-docs, servant-server, uuid, uuid-types
-      , wai-cors, warp
+      , resource-pool, servant-docs, servant-server, text, uuid
+      , uuid-types, wai-cors, warp
       }:
       mkDerivation {
         pname = "lista";
@@ -17,8 +17,8 @@ let
         isExecutable = true;
         executableHaskellDepends = [
           aeson Agda base bytestring flippers postgresql-simple QuickCheck
-          quickcheck-instances resource-pool servant-docs servant-server uuid
-          uuid-types wai-cors warp
+          quickcheck-instances resource-pool servant-docs servant-server text
+          uuid uuid-types wai-cors warp
         ];
         license = "unknown";
         hydraPlatforms = lib.platforms.none;
