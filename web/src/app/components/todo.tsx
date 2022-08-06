@@ -3,7 +3,7 @@ import { caseOf_ } from '../helpers/unsorted'
 import { Mode, TM } from '../types/todo'
 import RenderCounter from '../helpers/renderCounter'
 import AddTodo from './addTodo'
-import CheckBox from './checkbox'
+import Checkbox from './checkbox'
 
 type Props = {
   todo: db.Todo
@@ -50,20 +50,22 @@ export default function Todo({ todo, mode, onChange }: Props) {
 
 
 
+
 function ViewTodo({ todo, mode, onChange, className }: Props & { className?: string }): JSX.Element {
   return (
     <div
       className={`flex items-center py-1 ${className}`}
+      onClick={handleClick}
     >
-      <CheckBox
+      <Checkbox
         key="test"
         active={todo.active}
-        onChangeActive={() => onChange({ todo: { ...todo, active: !todo.active }, mode: mode })}
+        onClick={handleClickCheckbox}
         color={todo.color}
       />
       <p
-        onClick={handleClick}
         className="pl-1  w-full"
+        onClick={handleClickLabel}
       >
         {todo.text}
       </p>
@@ -71,6 +73,14 @@ function ViewTodo({ todo, mode, onChange, className }: Props & { className?: str
     </div>
   )
 
+  function handleClickLabel() {
+    onChange({ todo: todo, mode: "editing" })
+  }
+
+  function handleClickCheckbox(e: React.MouseEvent<HTMLInputElement>) {
+    if (!(e.shiftKey || e.ctrlKey))
+      onChange({ todo: { ...todo, active: !todo.active }, mode: mode })
+  }
 
   function handleClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void {
     if (e.shiftKey) {
@@ -79,8 +89,7 @@ function ViewTodo({ todo, mode, onChange, className }: Props & { className?: str
     else if (e.ctrlKey) {
       onChange({ todo: todo, mode: mode === "selected" ? "normal" : "selected" })
     }
-    else {
-      onChange({ todo: todo, mode: "editing" })
-    }
   }
+
+
 }
