@@ -1,3 +1,5 @@
+import { GoCheck } from 'react-icons/go'
+
 import { caseOf_ } from "../helpers/unsorted"
 import { Color } from "../types/DB"
 
@@ -11,8 +13,7 @@ export default function CheckBox({ active, onChangeActive, color }: Props): JSX.
   return (
     <label
       className={`
-        border rounded-[1px] inline-block w-4 h-4 mx-2 shadow-inner-eq
-        ${active ? "" : ""}
+        border rounded-[1px] inline-block w-4 h-4 min-w-[1rem] mx-2 shadow-inner-eq
         ${caseOf_(color,
         { k: "gray", v: "border-gray-300 shadow-gray-200" },
         { k: "blue", v: "border-sky-300 shadow-sky-200" },
@@ -24,9 +25,10 @@ export default function CheckBox({ active, onChangeActive, color }: Props): JSX.
        `
       }
     >
-      <input
+    { active && <GoCheck size="14px"/> }
+    <input
         type="checkbox"
-        className="invisible"
+        className="hidden"
         onChange={onChangeActive}
       />
     </label>
