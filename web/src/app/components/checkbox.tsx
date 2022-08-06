@@ -5,11 +5,11 @@ import { Color } from "../types/DB"
 
 type Props = {
   active: boolean
-  onChangeActive: () => void
+  onClick: (e: React.MouseEvent<HTMLInputElement>) => void
   color: Color
 }
 
-export default function CheckBox({ active, onChangeActive, color }: Props): JSX.Element {
+export default function Checkbox({ active, onClick, color }: Props): JSX.Element {
   return (
     <label
       className={`
@@ -17,7 +17,7 @@ export default function CheckBox({ active, onChangeActive, color }: Props): JSX.
         ${caseOf_(color,
         { k: "gray", v: "border-gray-300 shadow-gray-200" },
         { k: "blue", v: "border-sky-300 shadow-sky-200" },
-        { k: "yellow", v: "border-lemon-300 shadow-lemon-200" },
+        { k: "yellow", v: "border-yellow-300 shadow-yellow-200" },
         { k: "red", v: "border-red-300 shadow-red-200" },
         { k: "pink", v: "border-pink-300 shadow-pink-200" },
       )}
@@ -29,7 +29,7 @@ export default function CheckBox({ active, onChangeActive, color }: Props): JSX.
     <input
         type="checkbox"
         className="hidden"
-        onChange={onChangeActive}
+        onClick={onClick}
       />
     </label>
   )
