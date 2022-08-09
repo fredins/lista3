@@ -1,42 +1,37 @@
-import { memo, useCallback, useState } from 'react'
-import { useQuery } from 'react-query'
-import { ReactQueryDevtools } from 'react-query/devtools'
-import { map, any } from 'ramda'
+import { useState } from 'react'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
-import { TM } from './types/todo'
-import * as db from './types/DB'
-import { getAllTodos } from './apis/todoApi'
+import { Id } from './types/DB'
 import UnmemoizedTodoList from './components/todoList'
 
+/* TODO
+ 
+ - use postition field to sort TodoList
+ - add feature to move todos
+ 
+ - add multi list support with list name as key
 
+ - memoize things
+
+ - add option to remove todo by first selecting
+
+ - add mobile getstures for selecting and changing color
+ 
+*/
 
 export default function App(): JSX.Element {
-  const [todos, setTodos] = useState<TM[]>(() => [])
-
-  useQuery<db.Todo[], Error>('todos', getAllTodos, {
-    onSuccess: xs =>
-      setTodos(map(x => ({ todo: x, mode: "normal" }), xs))
-  })
-
-  // Needs to be locally defined. Perhaps because of shallow copy
-  const TodoList = memo(UnmemoizedTodoList)
+  const [editing, setEditing] = useState<Id>()
+  const [selected, setSelected] = useState<Id[]>(() => [])
 
   return (
     <>
-      <TodoList todos={todos} onChange={handleChange}/>
+      <UnmemoizedTodoList
+        editing={editing}
+        setEditing={setEditing}
+        selected={selected}
+        setSelected={setSelected}
+      />
       <ReactQueryDevtools />
     </>
   );
-  
-  function handleChange(newTm: TM) {
-    if (!(newTm.mode === "selected" && any(x => x.mode === "editing", todos))) {
-      const eq = (x: TM) => x.todo.id === newTm.todo.id
-      let f: (x: TM) => TM
-      if (newTm.mode === "editing")
-        f = x => eq(x) ? newTm : { todo: x.todo, mode: "normal" }
-      else
-        f = x => eq(x) ? newTm : x
-      setTodos(map(f, todos))
-    }
-  }
 }

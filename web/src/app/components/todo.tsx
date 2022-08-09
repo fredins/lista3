@@ -1,24 +1,39 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+
 import * as db from '../types/DB'
+import { Color } from '../types/DB'
 import { caseOf_ } from '../helpers/unsorted'
-import { Mode, TM } from '../types/todo'
-import RenderCounter from '../helpers/renderCounter'
-import AddTodo from './addTodo'
+import { Mode } from '../types/todo'
+import EditTodo from './editTodo'
 import Checkbox from './checkbox'
+import * as api from '../apis/todoApi'
+import { updateTodo } from '../helpers/todo'
+import RenderCounter from '../helpers/renderCounter'
 
 type Props = {
   todo: db.Todo
   mode: Mode
-  onChange: (newTm: TM) => void
+  onModeChange: (mode: Mode, requestedMode: Mode) => void
 }
 
-export default function Todo({ todo, mode, onChange }: Props) {
+export default function Todo({ todo, mode, onModeChange }: Props) {
+  const qc = useQueryClient()
+
+  const mut = useMutation(api.updateTodo, {
+    onMutate: async (todo: db.Todo) => {
+      await qc.cancelQueries(["todos"])
+      qc.setQueryData(["todos"], (prev: db.Todo[] | undefined) => prev ?
+        updateTodo(todo, prev) : undefined)
+    },
+  })
+
   return caseOf_(mode,
     {
       k: "normal", v:
         <ViewTodo
           todo={todo}
           mode={mode}
-          onChange={onChange}
+          onModeChange={onModeChange}
           className="bg-white"
         />
     },
@@ -27,36 +42,44 @@ export default function Todo({ todo, mode, onChange }: Props) {
         <ViewTodo
           todo={todo}
           mode={mode}
-          onChange={onChange}
+          onModeChange={onModeChange}
           className="bg-sky-100"
         />
     },
     {
       k: "editing", v:
-        <AddTodo
+        <EditTodo
           text={todo.text}
           color={todo.color}
-          onExit={() => onChange({ todo: todo, mode: "normal" })}
+          onExit={() => onModeChange(mode, "normal")}
           onSubmit={handleSubmit}
         />
     }
   )
 
-  function handleSubmit(text: string, color: db.Color, e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(text: string, color: Color, e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    onChange({ todo: { ...todo, text: text, color: color }, mode: "normal" })
+    mut.mutate({ ...todo, text: text, color: color })
+    onModeChange(mode, "normal")
   }
 }
 
+function ViewTodo({ todo, mode, onModeChange, className }: Props & { className?: string }): JSX.Element {
+  const qc = useQueryClient()
+
+  const mut = useMutation(api.updateTodo, {
+    onMutate: async (todo: db.Todo) => {
+      await qc.cancelQueries(["todos"])
+      qc.setQueryData(["todos"], (prev: db.Todo[] | undefined) => prev ?
+        updateTodo(todo, prev) : undefined)
+    },
+  })
 
 
-
-function ViewTodo({ todo, mode, onChange, className }: Props & { className?: string }): JSX.Element {
   return (
     <div
-      className={`flex items-center py-1 ${className}`}
-      onClick={handleClick}
-    >
+      className={`flex items-center py-1 cursor-pointer ${className}`}
+      onClick={handleClick} >
       <Checkbox
         key="test"
         active={todo.active}
@@ -73,23 +96,23 @@ function ViewTodo({ todo, mode, onChange, className }: Props & { className?: str
     </div>
   )
 
-  function handleClickLabel() {
-    onChange({ todo: todo, mode: "editing" })
+  function handleClickLabel(e: React.MouseEvent<HTMLInputElement>) {
+    if (!(e.shiftKey || e.ctrlKey))
+      onModeChange(mode, "editing")
   }
 
   function handleClickCheckbox(e: React.MouseEvent<HTMLInputElement>) {
     if (!(e.shiftKey || e.ctrlKey))
-      onChange({ todo: { ...todo, active: !todo.active }, mode: mode })
+      mut.mutate({ ...todo, active: !todo.active })
   }
 
   function handleClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void {
     if (e.shiftKey) {
-      onChange({ todo: { ...todo, color: todo.color === "gray" ? "blue" : "gray" }, mode: mode })
+      mut.mutate({ ...todo, color: todo.color === "gray" ? "blue" : "gray" })
     }
     else if (e.ctrlKey) {
-      onChange({ todo: todo, mode: mode === "selected" ? "normal" : "selected" })
+      onModeChange(mode, mode === "normal" ? "selected" : "normal")
     }
   }
-
 
 }

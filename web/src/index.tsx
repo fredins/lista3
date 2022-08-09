@@ -3,13 +3,13 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './app/app';
 import reportWebVitals from './reportWebVitals';
-import { QueryClient, QueryClientProvider } from 'react-query'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 
 const queryClient = new QueryClient({
   defaultOptions: {
       queries: {
-        staleTime: Infinity,
+        staleTime: 20*1000,
       },
     },
   }

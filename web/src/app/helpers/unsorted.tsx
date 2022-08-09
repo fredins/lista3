@@ -1,4 +1,5 @@
 import { find } from 'ramda'
+import { Id } from '../types/DB'
 
 type Case<A, B> = {
   k: A
@@ -22,3 +23,5 @@ export function caseOfDefault<A, B>(expr: A, def: B, ...cases: Case<A,B>[]){
 export function caseOfDefaultB<B>(def: B, ...cases: Case<Boolean, B>[]): B {
   return caseOfDefault(true, def, ...cases)
 }
+
+export const nil: Id = "00000000-0000-0000-0000-000000000000"

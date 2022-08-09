@@ -4,7 +4,7 @@ export type Color = "gray"
                   | "blue"
                   | "yellow"
                   | "red"
-                  | "pink"
+                  | "green"
 
 export type Todo = {
   id: Id

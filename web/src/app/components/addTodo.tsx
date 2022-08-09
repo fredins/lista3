@@ -1,63 +1,76 @@
-import { useState } from 'react'
-import { curry } from 'ramda'
+import { AiOutlinePlus } from 'react-icons/ai'
+import { useQueryClient, useMutation } from '@tanstack/react-query'
 
-import * as db from '../types/DB'
+import EditTodo from './editTodo'
+import { caseOf_ } from '../helpers/unsorted'
+import { Color, NewTodo, Todo } from '../types/DB'
+import { Mode } from '../types/todo'
+import { postNewTodo } from '../apis/todoApi'
+import { nil } from '../helpers/unsorted'
+
+
 
 type Props = {
-  text: string
-  color: db.Color
-  onExit: () => void
-  onSubmit: (text: string, color: db.Color, e: React.FormEvent<HTMLFormElement>) => void
+  mode: Exclude<Mode, "selected">
+  onModeChange: (mode: Mode, requestedMode: Mode) => void
 }
 
-export default function AddTodo({ text, color, onExit, onSubmit }: Props): JSX.Element {
-  const [text_, setText] = useState(text)
-  const [color_, setColor] = useState<db.Color>(color)
+export default function AddTodo({ mode, onModeChange }: Props) {
+  const qc = useQueryClient()
+  
+  const mut = useMutation(postNewTodo, {
+    onMutate: async (newTodo: NewTodo) => {
+      await qc.cancelQueries(['todos'])
+      qc.setQueryData(["todos"], (prev: Todo[] | undefined) => prev ? 
+        [...prev, {...newTodo, id: nil}] : undefined)
+    },
+    onSuccess: () => qc.invalidateQueries(["todos"])
+  })
 
-  return (
-    <form
-      className="mt-2 mb-6 border-none"
-      onSubmit={curry(onSubmit)(text_, color_)}
-    >
-      <div
-        className="static flex items-center border border-gray-300 rounded p-2 bg-white"
-      >
-        <input
-          value={text_}
-          onChange={e => setText(e.target.value)}
-          className="outline-none"
+  return caseOf_(mode,
+    {
+      k:
+        "normal",
+      v:
+        <Normal />
+    },
+    {
+      k:
+        "editing",
+      v:
+        <EditTodo
+          text=""
+          color="gray"
+          onExit={() => onModeChange(mode, "normal")}
+          onSubmit={handleSubmit}
         />
-      </div>
+    },
 
-      <div
-        className="flex flex-row justify-between space-x-1 mt-1"
-      >
-        <select
-          className="bg-white text-sm border border-gray-300 rounded-sm drop-shadow-sm outline-none"
-          defaultValue={color_}
-          onChange={e => setColor(e.target.value as db.Color)}
-        >
-          <option value="gray">grå</option>
-          <option value="blue">blå</option>
-          <option value="yellow">gul</option>
-          <option value="red">röd</option>
-          <option value="pink">rosa</option>
-        </select>
-
-        <div
-          className="space-x-1"
-        >
-          <button
-            className="bg-white px-2 text-sm border border-gray-300 rounded-sm drop-shadow-sm"
-            type="button"
-            onClick={onExit}
-          >Avbryt</button>
-          <button
-            className="bg-white px-2 text-sm border border-gray-300 rounded-sm drop-shadow-sm"
-          >Spara
-          </button>
-        </div>
-      </div>
-    </form>
   )
+
+  function handleSubmit(text: string, color: Color, e: React.FormEvent<HTMLFormElement>){
+    e.preventDefault()
+    mut.mutate({ text: text, color: color, active: true })
+    onModeChange(mode, "normal")
+  }  
+
+  function Normal() {
+    return (
+      <div
+        className='flex items-center text-gray-400 hover:text-sky-500 pt-2 cursor-pointer'
+        onClick={() => onModeChange(mode, "editing")}
+      >
+        <AiOutlinePlus
+          className='mx-2'
+
+        />
+        <p
+          className='pl-1'
+        >
+          Lägg till uppgift
+        </p>
+      </div>
+    )
+  }
 }
+
