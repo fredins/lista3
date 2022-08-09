@@ -37,6 +37,14 @@ import Data.Function.Flippers (flip4)
 import Data.Text (unpack, pack)
 import Distribution.Simple.Utils (lowercase)
 
+
+{- TODO
+ - Endpoint updateTodo if id=nil then generate new id (used for local state in frontend)
+ - Endpoint newTodo should not take the active field
+ - Add position field to todo, which is an integer with spaced x apart
+ - Implement a hashing algorithm to redistribute positional values too close together.
+ -}
+
 -- DATA TYPES
 
 data Todo = Todo {
@@ -50,7 +58,7 @@ data Color = Gray
            | Blue
            | Yellow
            | Red
-           | Pink 
+           | Green 
              deriving (Eq, Generic, Show)
 
 fromString :: String ->Color
@@ -59,7 +67,7 @@ fromString s = case lowercase s of
   "blue"   -> Blue  
   "yellow" -> Yellow
   "red"    -> Red   
-  "pink"   -> Pink  
+  "green"  -> Green  
   err      -> error err
 
 newtype NewTodo = NewTodo (UUID ->Todo) deriving (Generic)
@@ -69,7 +77,7 @@ instance Arbitrary Todo where
     "Gräddfil", "Snaps"]) arbitrary arbitrary
 
 instance Arbitrary Color where
-  arbitrary = elements [Gray, Blue, Yellow, Red, Pink]
+  arbitrary = elements [Gray, Blue, Yellow, Red, Green]
 
 -- SERVER
 
