@@ -2,49 +2,60 @@ cabal-version:      2.4
 name:               lista
 version:            0.1.0.0
 
--- A short (one-line) description of the package.
--- synopsis:
-
--- A longer description of the package.
--- description:
-
--- A URL where users can report bugs.
--- bug-reports:
-
--- The license under which the package is released.
--- license:
 author:             Martin Fredin
 maintainer:         fredin.martin@gmail.com
 
--- A copyright notice.
--- copyright:
--- category:
 extra-source-files: CHANGELOG.md
 
 executable lista
-    main-is:          Main.hs
+    main-is:         Lista.hs
 
-    -- Modules included in this executable, other than Main.
-    -- other-modules:
+    other-modules: 
+      Lista.Db
+      Lista.Oidc 
+      Lista.Auxiliary
+      Lista.ServerError
 
-    -- LANGUAGE extensions used by modules in this package.
-    -- other-extensions:
-    build-depends:    base ^>=4.15.1.0, 
-                      servant-server,
-                      servant-docs,
-                      aeson,
-                      warp,
-                      bytestring,
-                      postgresql-simple,
-                      uuid,
-                      uuid-types,
-                      QuickCheck,
-                      quickcheck-instances,
-                      resource-pool ^>=0.3.1.0,
-                      Agda,
-                      wai-cors,
-                      flippers,
-                      text,
-
-    hs-source-dirs:   app
+    build-depends:    base ^>=4.15.1.0
+     , relude
+     , aeson
+     , aeson-pretty
+     , binary
+     , blaze-html
+     , blaze-markup
+     , bytestring
+     , case-insensitive
+     , cereal
+     , containers
+     , generic-lens
+     , http-client
+     , http-client-tls
+     , http-types
+     , jose-jwt
+     , lens
+     , lens-aeson
+     , oidc-client
+     , random
+     , servant
+     , servant-blaze
+     , servant-server
+     , text
+     , time
+     , vector
+     , wai
+     , warp >= 3.2
+     , mtl
+     , wai-cors
+     , uuid
+     , uuid-types
+     , postgresql-simple
+     , QuickCheck
+     , quickcheck-instances
+     , cookie
+     , servant-docs
+     , resource-pool ^>=0.3.1.0
+     , extra
+                    
+    default-extensions: NoImplicitPrelude
+    hs-source-dirs:   src
     default-language: Haskell2010
