@@ -1,29 +1,26 @@
 import { useState } from 'react'
 import { curry } from 'ramda'
 
-import * as db from '../types/DB'
-
 type Props = {
-  text: string
-  color: db.Color
+  todo: Todo
   onExit: () => void
-  onSubmit: (text: string, color: db.Color, e: React.FormEvent<HTMLFormElement>) => void
+  onSubmit: (todo: Todo, e: React.FormEvent<HTMLFormElement>) => void
 }
 
-export default function EditTodo({ text, color, onExit, onSubmit }: Props): JSX.Element {
-  const [text_, setText] = useState(text)
-  const [color_, setColor] = useState<db.Color>(color)
+export default function EditTodo({todo, onExit, onSubmit }: Props): JSX.Element {
+  const [text, setText] = useState(todo.text)
+  const [color, setColor] = useState<Color>(todo.color)
 
   return (
     <form
       className="mt-2 mb-6 border-none"
-      onSubmit={curry(onSubmit)(text_, color_)}
+      onSubmit={curry(onSubmit)({...todo, text: text, color: color})}
     >
       <div
         className="static flex items-center border border-gray-300 rounded p-2 bg-white"
       >
         <input
-          value={text_}
+          value={text}
           onChange={e => setText(e.target.value)}
           className="outline-none"
           autoFocus
@@ -35,8 +32,8 @@ export default function EditTodo({ text, color, onExit, onSubmit }: Props): JSX.
       >
         <select
           className="bg-white text-sm border border-gray-300 rounded-sm drop-shadow-sm outline-none"
-          defaultValue={color_}
-          onChange={e => setColor(e.target.value as db.Color)}
+          defaultValue={color}
+          onChange={e => setColor(e.target.value as Color)}
         >
           <option value="gray">grå</option>
           <option value="blue">blå</option>

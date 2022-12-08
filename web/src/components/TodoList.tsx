@@ -2,43 +2,53 @@ import { Dispatch } from 'react'
 import { map, includes, curry, filter } from 'ramda'
 import { useQuery } from '@tanstack/react-query'
 
-import { getAllTodos } from '../apis/todoApi'
-import UnmemoizedTodo from './todo'
-import * as db from '../types/DB'
-import { Id } from '../types/DB'
-import AddTodo from './addTodo'
-import { Mode } from '../types/todo'
-import { nil } from '../helpers/unsorted'
+import { fetchAllTodos } from '../api'
+import UnmemoizedTodo from './TodoItem'
+import AddTodo from './AddTodo'
+import { nil } from '../util'
+import { useAuth } from './Auth'
+
+type Mode = "normal"
+          | "selected"
+          | "editing"
 
 type Props = {
+  list: List
   editing: Id | undefined
   setEditing: Dispatch<Id | undefined>
   selected: Id[]
   setSelected: Dispatch<Id[]>
 }
 
-export default function TodoList({ editing, setEditing, selected, setSelected }: Props): JSX.Element {
-  const { data } = useQuery<db.Todo[], Error>(["todos"], getAllTodos)
+export default function TodoList({ list, editing, setEditing, selected, setSelected }: Props): JSX.Element {
+  const { sessionKey } = useAuth()
+  const { data } = useQuery<Todo[], Error>(["todos"], () => fetchAllTodos(list.id, sessionKey!))
   const todos = data ? data : []
 
   return (
     <div
-      className="relative mx-4 max-w-xs p-2 divide-y divide-gray-300"
+      className='mx-4'
     >
-      {
-        map(t => (
-          <UnmemoizedTodo
-            key={t.id}
-            todo={t}
-            mode={getMode(t.id)}
-            onModeChange={curry(handleModeChange)(t.id)}
-          />
-        ), todos)
-      }
-      <AddTodo
-        mode={editing === nil ? "editing" : "normal"}
-        onModeChange={curry(handleModeChange)(nil)}
-      />
+      <p className="text-2xl">{list.name}</p>
+      <div
+        className="relative max-w-xs divide-y divide-gray-300"
+      >
+        {
+          map(t => (
+            <UnmemoizedTodo
+              key={t.id}
+              todo={t}
+              mode={getMode(t.id)}
+              onModeChange={curry(handleModeChange)(t.id)}
+            />
+          ), todos)
+        }
+        <AddTodo
+          listId={list.id}
+          mode={editing === nil ? "editing" : "normal"}
+          onModeChange={curry(handleModeChange)(nil)}
+        />
+      </div>
     </div>
   )
 

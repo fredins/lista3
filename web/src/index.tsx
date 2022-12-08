@@ -1,26 +1,30 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import { render } from 'react-dom';
+import { StrictMode } from 'react'
 import './index.css';
-import App from './app/app';
+import { Routes } from './components/Routes';
 import reportWebVitals from './reportWebVitals';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { RouterProvider } from '@tanstack/react-router';
+import { useAuth, AuthProvider } from './components/Auth'
 
 
 const queryClient = new QueryClient({
-  defaultOptions: {
-      queries: {
-        staleTime: 20*1000,
-      },
-    },
-  }
+// defaultOptions: {
+//     queries: {
+//       staleTime: 20*1000,
+//     },
+//   },
+ }
 )
 
-ReactDOM.render(
-  <React.StrictMode>
+render(
+  <StrictMode>
       <QueryClientProvider client={queryClient}>
-        <App />
+       <AuthProvider>
+         <Routes />
+       </AuthProvider>
       </QueryClientProvider>
-  </React.StrictMode>,
+  </StrictMode>,
   document.getElementById('root')
 );
 

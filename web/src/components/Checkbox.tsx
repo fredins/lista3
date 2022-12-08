@@ -1,7 +1,6 @@
 import { GoCheck } from 'react-icons/go'
 
-import { caseOf_ } from "../helpers/unsorted"
-import { Color } from "../types/DB"
+import { caseOf_ } from "../util"
 
 type Props = {
   active: boolean

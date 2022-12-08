@@ -22,5 +22,8 @@
   },
   "include": [
     "src"
-  ]
+  ],
+  "paths": {
+    "*": ["src/d.ts/*.d.ts"]
+  }
 }
