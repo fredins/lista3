@@ -21,7 +21,9 @@ import           Lista.Auxiliary
 import           Lista.Db                         as D
 import           Lista.Oidc                       as O
 import           Lista.ServerError
+import qualified Prelude                          as P
 
+import qualified Data.ByteString.Char8            as BC
 import           Data.UUID.V4                     (nextRandom)
 import           Network.HTTP.Client              (Manager, newManager)
 import           Network.HTTP.Client.TLS          (tlsManagerSettings)
@@ -57,9 +59,10 @@ oidcConf password = OidcConf
 
 main :: IO ()
 main = do
-  pool    <- initConnectionPool defaultConnectInfo
-  mgr     <- newManager tlsManagerSettings
-  oidcEnv <- initOidc . oidcConf =<< readFileBS "../secrets"
+  pool     <- initConnectionPool defaultConnectInfo
+  mgr      <- newManager tlsManagerSettings
+  password <- P.head . BC.lines <$> readFileBS "secrets"
+  oidcEnv  <- initOidc $ oidcConf password
   withResource pool initDB
   let context' = context pool mgr
       server'  = server  pool mgr oidcEnv
