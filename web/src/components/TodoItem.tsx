@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import EditTodo from './EditTodo'
 import Checkbox from './Checkbox'
-import RenderCounter from './RenderCounter'
 import { useAuth } from './Auth'
 import { updateTodo } from '../api'
 import { map } from 'ramda'
@@ -77,7 +76,6 @@ export default function TodoItem({ todo, mode, onModeChange }: Props) {
         >
           {todo.text}
         </p>
-        <RenderCounter />
       </div>
     )
 

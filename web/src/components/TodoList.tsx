@@ -13,25 +13,29 @@ type Mode = "normal"
           | "editing"
 
 type Props = {
-  list: List
+  activeList: List
   editing: Id | undefined
   setEditing: Dispatch<Id | undefined>
   selected: Id[]
   setSelected: Dispatch<Id[]>
 }
 
-export default function TodoList({ list, editing, setEditing, selected, setSelected }: Props): JSX.Element {
+export default function TodoList({ activeList, editing, setEditing, selected, setSelected }: Props): JSX.Element {
   const { sessionKey } = useAuth()
-  const { data } = useQuery<Todo[], Error>(["todos"], () => fetchAllTodos(list.id, sessionKey!))
+  const { data } = useQuery<Todo[], Error>(["todos"], () => fetchAllTodos(activeList.id, sessionKey!))
   const todos = data ? data : []
 
   return (
     <div
-      className='mx-4'
+      className="mx-2 border w-96"
     >
-      <p className="text-2xl">{list.name}</p>
       <div
-        className="relative max-w-xs divide-y divide-gray-300"
+      className="bg-zinc-50 h-8 border-b px-2 flex flex-col justify-center"
+      >
+      {activeList.name}
+      </div>
+      <div
+        className="divide-y divide-gray-300 p-4"
       >
         {
           map(t => (
@@ -44,7 +48,7 @@ export default function TodoList({ list, editing, setEditing, selected, setSelec
           ), todos)
         }
         <AddTodo
-          listId={list.id}
+          listId={activeList.id}
           mode={editing === nil ? "editing" : "normal"}
           onModeChange={curry(handleModeChange)(nil)}
         />
