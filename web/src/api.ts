@@ -9,7 +9,7 @@ export {
   updateTodo,
 }
 
-const server = "http://dev.fredin.org"
+const server = "https://dev.fredin.org"
 const privateServer = `${server}/private`
 
 async function authenticate(sessionKey : Id): Promise<UserDetails> {
@@ -18,12 +18,16 @@ async function authenticate(sessionKey : Id): Promise<UserDetails> {
 }
 
 async function fetchLists(sessionKey : Id): Promise<[List]> {
-  const res = await fetch(`${privateServer}/lists?sessionKey=${sessionKey}`)
+  const res = await fetch(`${privateServer}/lists?sessionKey=${sessionKey}`, {
+    credentials: 'include'
+  })
   return res.json()
 }
 
 async function createList(name: string, sessionKey : Id) {
-  const { status, ok } = await fetch(`${privateServer}/newList?name=${name}&sessionKey=${sessionKey}`)
+  const { status, ok } = await fetch(`${privateServer}/newList?name=${name}&sessionKey=${sessionKey}`, {
+    credentials: 'include'
+  })
   if (status === 412){
     throw new Error(`List with name ${name} already exists ` + status)
   }
@@ -33,17 +37,23 @@ async function createList(name: string, sessionKey : Id) {
 }
 
 async function fetchAllTodos(listId: Id, sessionKey: Id): Promise<Todo[]> {
-  const res = await fetch(`${privateServer}/todos?listId=${listId}&sessionKey=${sessionKey}`)
+  const res = await fetch(`${privateServer}/todos?listId=${listId}&sessionKey=${sessionKey}`, {
+    credentials: 'include'
+  })
   return res.json()
 }
 
 async function fetchActiveTodos(listId: Id, sessionKey: Id): Promise<Todo[]> {
-  const res = await fetch(`${privateServer}/todos?listId=${listId}&active=True?sessionKey=${sessionKey}`)
+  const res = await fetch(`${privateServer}/todos?listId=${listId}&active=True?sessionKey=${sessionKey}`, {
+    credentials: 'include'
+  })
   return res.json()
 }
 
 async function fetchCompletedTodos(listId: Id, sessionKey: Id): Promise<Todo[]> {
-  const res = await fetch(`${privateServer}/todos?listId=${listId}&active=False?sessionKey=${sessionKey}`)
+  const res = await fetch(`${privateServer}/todos?listId=${listId}&active=False?sessionKey=${sessionKey}`, {
+    credentials: 'include'
+  })
   return res.json()
 }
 
@@ -55,7 +65,8 @@ async function createNewTodo(newTodo: NewTodo, sessionKey : Id): Promise<Respons
         'Content-Type': "application/json",
         Origin: "127.0.0.1"
       }, 
-      body: JSON.stringify(newTodo)
+      body: JSON.stringify(newTodo),
+      credentials: 'include'
     }
   )
 }
@@ -68,7 +79,8 @@ async function updateTodo(todo: Todo, sessionKey : Id): Promise<Response> {
         'Content-Type': "application/json",
         Origin: "127.0.0.1"
       }, 
-      body: JSON.stringify(todo)
+      body: JSON.stringify(todo),
+      credentials: 'include'
     }
   )
 }

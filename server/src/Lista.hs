@@ -30,7 +30,9 @@ import           Network.HTTP.Client.TLS          (tlsManagerSettings)
 import           Network.HTTP.Types.URI           (queryToQueryText)
 import           Network.Wai                      (Request, queryString,
                                                    requestHeaders)
-import           Network.Wai.Handler.Warp         (run)
+import           Network.Wai.Handler.Warp         (defaultSettings, run,
+                                                   setPort)
+import           Network.Wai.Handler.WarpTLS      (runTLS, tlsSettings)
 import           Network.Wai.Middleware.Cors      (cors, corsMethods,
                                                    corsOrigins,
                                                    corsRequestHeaders,
@@ -51,7 +53,7 @@ import           Web.Cookie                       (SetCookie, def, parseCookies,
 
 oidcConf :: ByteString -> OidcConf
 oidcConf password = OidcConf
-  { redirectUri = "http://dev.fredin.org/login/cb"
+  { redirectUri = "https://dev.fredin.org/login/cb"
   , clientId = "223213082722-d8vun6oi1alfck9huskmsc1e17l6osd7.apps.googleusercontent.com"
   , clientPassword = password
   }
@@ -67,14 +69,16 @@ main = do
   let context' = context pool mgr
       server'  = server  pool mgr oidcEnv
 
-  run 4000 . cors' $ serveWithContext api context' server'
+  runTLS tls warp . cors' $ serveWithContext api context' server'
 
   where
   cors' = (cors . const) $ Just simpleCorsResourcePolicy
-    { corsOrigins        = Just (["http://localhost:3000"], True)
+    { corsOrigins        = Just (["https://dev1.fredin.org"], True)
     , corsRequestHeaders = ["Content-Type"]
     , corsMethods        = ["OPTIONS", "GET", "PUT", "POST"]
     }
+  tls  = tlsSettings "../ssl/cert.pem" "../ssl/key.pem"
+  warp = setPort 4000 defaultSettings
 
 
 -- TODO
@@ -89,7 +93,7 @@ context :: Pool Connection -> Manager -> Context '[AuthHandler Request Session]
 context pool mgr = authHandler pool mgr :. EmptyContext
 
 authHandler :: Pool Connection -> Manager -> AuthHandler Request Session
-authHandler pool mgr = mkAuthHandler checkQueryParam
+authHandler pool mgr = mkAuthHandler checkCookie
   where
   checkCookie :: Request -> Handler Session
   checkCookie req = do
@@ -153,7 +157,7 @@ handleSuccessfulLoggedIn pool AuthInfo{..} = do
       D.insertSession conn $
       D.Session {sessionKey=decodeUtf8 sessionKey, userId=userId}
 
-  redirects $ "http://localhost:3000/auth/" <> sessionKey
+  redirects $ "https://dev1.fredin.org/auth/" <> sessionKey
   pure NoContent
 
 
@@ -169,8 +173,8 @@ handleAuthenticate pool (Just sessionKey) = do
        { setCookieName = "sessionKey"
        , setCookieValue = encodeUtf8 sessionKey
    --    , setCookieHttpOnly = True
-       , setCookieSameSite = Just sameSiteLax
-  --     , setCookieSecure   = True
+       , setCookieSameSite = Just sameSiteNone
+       , setCookieSecure   = True
        }
 
   pure $ addHeader cookie userDetails

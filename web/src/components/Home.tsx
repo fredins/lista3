@@ -1,7 +1,7 @@
 import { fetchLists } from '../api'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from './Auth'
-import { find, head } from 'ramda'
+import { find } from 'ramda'
 import { useState } from 'react'
 import TodoList from './TodoList'
 import ListPanel from './ListPanel'

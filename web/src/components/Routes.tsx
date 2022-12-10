@@ -94,7 +94,7 @@ const authRoute1 = rootRoute.createRoute({
     return (
       <>
         <router.Link to="/">Home</router.Link> <br />
-        <a href="http://localhost:4000/login">Login with google</a>
+        <a href="https://dev.fredin.org/login">Login with google</a>
       </>
     )
 
