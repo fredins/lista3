@@ -17,15 +17,15 @@ async function authenticate(sessionKey : Id): Promise<UserDetails> {
   return res.json()
 }
 
-async function fetchLists(sessionKey : Id): Promise<[List]> {
-  const res = await fetch(`${privateServer}/lists?sessionKey=${sessionKey}`, {
+async function fetchLists(): Promise<[List]> {
+  const res = await fetch(`${privateServer}/lists`, {
     credentials: 'include'
   })
   return res.json()
 }
 
-async function createList(name: string, sessionKey : Id) {
-  const { status, ok } = await fetch(`${privateServer}/newList?name=${name}&sessionKey=${sessionKey}`, {
+async function createList(name: string) {
+  const { status, ok } = await fetch(`${privateServer}/newList?name=${name}`, {
     credentials: 'include'
   })
   if (status === 412){
@@ -36,29 +36,29 @@ async function createList(name: string, sessionKey : Id) {
   }
 }
 
-async function fetchAllTodos(listId: Id, sessionKey: Id): Promise<Todo[]> {
-  const res = await fetch(`${privateServer}/todos?listId=${listId}&sessionKey=${sessionKey}`, {
+async function fetchAllTodos(listId: Id): Promise<Todo[]> {
+  const res = await fetch(`${privateServer}/todos?listId=${listId}`, {
     credentials: 'include'
   })
   return res.json()
 }
 
-async function fetchActiveTodos(listId: Id, sessionKey: Id): Promise<Todo[]> {
-  const res = await fetch(`${privateServer}/todos?listId=${listId}&active=True?sessionKey=${sessionKey}`, {
+async function fetchActiveTodos(listId: Id): Promise<Todo[]> {
+  const res = await fetch(`${privateServer}/todos?listId=${listId}&active=True`, {
     credentials: 'include'
   })
   return res.json()
 }
 
-async function fetchCompletedTodos(listId: Id, sessionKey: Id): Promise<Todo[]> {
-  const res = await fetch(`${privateServer}/todos?listId=${listId}&active=False?sessionKey=${sessionKey}`, {
+async function fetchCompletedTodos(listId: Id): Promise<Todo[]> {
+  const res = await fetch(`${privateServer}/todos?listId=${listId}&active=False`, {
     credentials: 'include'
   })
   return res.json()
 }
 
-async function createNewTodo(newTodo: NewTodo, sessionKey : Id): Promise<Response> {
-  return fetch(`${privateServer}/newTodo?sessionKey=${sessionKey}`,
+async function createNewTodo(newTodo: NewTodo): Promise<Response> {
+  return fetch(`${privateServer}/newTodo`,
     {
       method: 'POST', 
       headers: { 
@@ -71,8 +71,8 @@ async function createNewTodo(newTodo: NewTodo, sessionKey : Id): Promise<Respons
   )
 }
 
-async function updateTodo(todo: Todo, sessionKey : Id): Promise<Response> {
-  return fetch(`${privateServer}/updateTodo?sessionKey=${sessionKey}`,
+async function updateTodo(todo: Todo): Promise<Response> {
+  return fetch(`${privateServer}/updateTodo`,
     {
       method: 'POST', 
       headers: { 

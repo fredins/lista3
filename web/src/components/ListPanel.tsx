@@ -2,7 +2,6 @@ import { useMemo, Dispatch, useState } from 'react'
 import ListItem from './ListItem'
 import { map } from 'ramda'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useAuth } from './Auth'
 import { createList } from '../api'
 
 
@@ -15,12 +14,11 @@ type Props = {
 
 export default function ListPanel({ lists, activeList, setActiveList } : Props ) {
   const queryClient = useQueryClient()
-  const auth = useAuth()
   
   const [newList, setNewList] = useState("")
 
   const createListMutation = useMutation(
-    () => createList(newList, auth.sessionKey!), {
+    () => createList(newList), {
     onSuccess: () => queryClient.invalidateQueries(["lists"]),
     onError: (error: Error) => console.log(error.message),
     onSettled: () => setNewList("")

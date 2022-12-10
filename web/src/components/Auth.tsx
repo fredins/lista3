@@ -19,7 +19,6 @@ type AuthContext = {
 type AuthContextState = {
   status       : 'loggedOut' | 'loggedIn'
   userDetails? : UserDetails
-  sessionKey?  : string
 }
 
 const authContext = createContext<AuthContext>(null!)
@@ -33,12 +32,11 @@ function AuthProvider(props: { children: React.ReactNode }) {
     status: 'loggedOut'
   })
 
-  const login = (userDetails : UserDetails, sessionKey : string) => {
+  const login = (userDetails : UserDetails) => {
     console.log("login!")
     setState({ 
       status: 'loggedIn',
       userDetails: userDetails,
-      sessionKey: sessionKey
     })
   }
 

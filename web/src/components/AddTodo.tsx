@@ -4,7 +4,6 @@ import { useQueryClient, useMutation } from '@tanstack/react-query'
 import EditTodo from './EditTodo'
 import { createNewTodo } from '../api'
 import { nil } from '../util'
-import { useAuth } from './Auth'
 
 type Mode = "normal"
           | "selected"
@@ -18,9 +17,8 @@ type Props = {
 
 export default function AddTodo({ listId, mode, onModeChange }: Props) {
   const queryClient = useQueryClient()
-  const { sessionKey } = useAuth()
   
-  const createTodoMutation = useMutation(newTodo => createNewTodo(newTodo, sessionKey!), {
+  const createTodoMutation = useMutation(newTodo => createNewTodo(newTodo), {
     onMutate: async (newTodo: NewTodo) => {
       await queryClient.cancelQueries(['todos'])
       queryClient.setQueryData(["todos"], (prev: Todo[] | undefined) => prev ? 

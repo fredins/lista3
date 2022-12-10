@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import EditTodo from './EditTodo'
 import Checkbox from './Checkbox'
-import { useAuth } from './Auth'
 import { updateTodo } from '../api'
 import { map } from 'ramda'
 
@@ -18,9 +17,8 @@ type Props = {
 
 export default function TodoItem({ todo, mode, onModeChange }: Props) {
   const queryClient = useQueryClient()
-  const { sessionKey } = useAuth()
 
-  const updateTodoMutation = useMutation(todo => updateTodo(todo, sessionKey!), {
+  const updateTodoMutation = useMutation(updateTodo, {
     onMutate: async (todo: Todo) => {
       await queryClient.cancelQueries(["todos"])
       queryClient.setQueryData(["todos"], 

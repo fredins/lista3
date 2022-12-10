@@ -6,7 +6,6 @@ import { fetchAllTodos } from '../api'
 import UnmemoizedTodo from './TodoItem'
 import AddTodo from './AddTodo'
 import { nil } from '../util'
-import { useAuth } from './Auth'
 
 type Mode = "normal"
           | "selected"
@@ -21,8 +20,7 @@ type Props = {
 }
 
 export default function TodoList({ activeList, editing, setEditing, selected, setSelected }: Props): JSX.Element {
-  const { sessionKey } = useAuth()
-  const { data } = useQuery<Todo[], Error>(["todos"], () => fetchAllTodos(activeList.id, sessionKey!))
+  const { data } = useQuery<Todo[], Error>(["todos"], () => fetchAllTodos(activeList.id))
   const todos = data ? data : []
 
   return (

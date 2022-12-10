@@ -181,18 +181,15 @@ handleAuthenticate pool (Just sessionKey) = do
 
 
 
-type PrivateApi = "userDetails" :> QueryParam "sessionKey" Text :> Get '[JSON] UserDetails
-             :<|> "lists"       :> QueryParam "sessionKey" Text :> Get '[JSON] [List]
-             :<|> "newList"     :> QueryParam "name" Text :> QueryParam "sessionKey" Text :> Get '[JSON] NoContent
+type PrivateApi = "userDetails" :> Get '[JSON] UserDetails
+             :<|> "lists"       :> Get '[JSON] [List]
+             :<|> "newList"     :> QueryParam "name" Text :> Get '[JSON] NoContent
              :<|> "todos"       :> QueryParam "listId" UUID
                                 :> QueryParam "active" Bool
-                                :> QueryParam "sessionKey" Text
                                 :> Get '[JSON] [Todo]
              :<|> "newTodo"     :> ReqBody '[JSON] (UUID -> Todo)
-                                :> QueryParam "sessionKey" Text
                                 :> Post '[JSON] NoContent
              :<|> "updateTodo"  :> ReqBody '[JSON] Todo
-                                :> QueryParam "sessionKey" Text
                                 :> Post '[JSON] NoContent
 
 
@@ -204,16 +201,16 @@ privateServer pool Session{..} = userDetails
                             :<|> newTodo
                             :<|> updateTodo
   where
-  userDetails :: Maybe Text -> Handler UserDetails
-  userDetails _ = do
+  userDetails :: Handler UserDetails
+  userDetails = do
     muser <- liftIO $ withResource pool (`selectUserById` userId)
     maybeToRightM (serverErrorErr "No User!") (userToUserDetails <$> muser)
 
-  lists :: Maybe Text -> Handler [List]
-  lists _ = liftIO $ withResource pool (`selectAllLists` userId)
+  lists :: Handler [List]
+  lists = liftIO $ withResource pool (`selectAllLists` userId)
 
-  newList :: Maybe Text -> Maybe Text -> Handler NoContent
-  newList mname _ = do
+  newList :: Maybe Text -> Handler NoContent
+  newList mname = do
     n <- maybeToRightM (preconditionFailedErr "Missing query param name.") mname
 
     -- Check if list already exists
@@ -229,21 +226,22 @@ privateServer pool Session{..} = userDetails
       insertListAccess conn ListAccess {listId=listId, userId=userId}
     pure NoContent
 
-  todos :: Maybe UUID -> Maybe Bool -> Maybe Text -> Handler [Todo]
-  todos mlistId mactive _ = do
+  todos :: Maybe UUID -> Maybe Bool -> Handler [Todo]
+  todos mlistId mactive = do
     listId <- maybeToRightM (preconditionFailedErr "Missing query param listId.") mlistId
     liftIO . withResource pool $ \conn ->
       case mactive of
         Nothing    -> selectAllTodos conn listId
         Just True  -> selectActiveTodos conn listId
         Just False -> selectCompletedTodos conn listId
-  newTodo :: (UUID -> Todo) -> Maybe Text -> Handler NoContent
-  newTodo mkTodo _ = do
+
+  newTodo :: (UUID -> Todo) -> Handler NoContent
+  newTodo mkTodo = do
     liftIO $ withResource pool (`insertTodo` mkTodo)
     pure NoContent
 
-  updateTodo :: Todo -> Maybe Text -> Handler NoContent
-  updateTodo todo _ = do
+  updateTodo :: Todo -> Handler NoContent
+  updateTodo todo = do
       liftIO $ withResource pool (`D.updateTodo` todo)
       pure NoContent
 

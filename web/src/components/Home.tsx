@@ -13,7 +13,7 @@ export default function Home() {
 
   const { data: lists } = useQuery<List[]>({
     queryKey: ["lists"],
-    queryFn: () => fetchLists(auth.sessionKey!)
+    queryFn: fetchLists
   });
 
   const [activeList, setActiveList] = useState<Id>()
