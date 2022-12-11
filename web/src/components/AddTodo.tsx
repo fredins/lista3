@@ -50,7 +50,7 @@ export default function AddTodo({ listId, mode, onModeChange }: Props) {
   function Normal() {
     return (
       <div
-        className='flex items-center text-gray-400 hover:text-sky-500 pt-2 cursor-pointe'
+        className="flex items-center text-gray-400 hover:text-sky-500 pt-2 cursor-pointer"
         onClick={() => onModeChange(mode, "editing")}
       >
         <AiOutlinePlus

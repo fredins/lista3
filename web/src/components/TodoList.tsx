@@ -29,7 +29,7 @@ export default function TodoList({ activeList, editing, setEditing, selected, se
 
   return (
     <div
-      className="mx-2 border w-96"
+      className="mx-2 border w-96 drop-shadow-sm"
     >
       <div
       className="bg-zinc-50 h-8 border-b px-2 flex flex-col justify-center"
