@@ -157,7 +157,7 @@ handleSuccessfulLoggedIn pool AuthInfo{..} = do
       D.insertSession conn $
       D.Session {sessionKey=decodeUtf8 sessionKey, userId=userId}
 
-  redirects $ "https://dev1.fredin.org/auth/" <> sessionKey
+  redirects $ "http://localhost:3000/auth/" <> sessionKey
   pure NoContent
 
 

@@ -9,7 +9,11 @@ export {
   updateTodo,
 }
 
-const server = "https://dev.fredin.org"
+// Production
+// const server = "https://dev.fredin.org"
+// Development
+const server = ""
+
 const privateServer = `${server}/private`
 
 async function authenticate(sessionKey : Id): Promise<UserDetails> {
