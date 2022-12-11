@@ -1,8 +1,8 @@
 import { createReactRouter, createRouteConfig, useMatch, Outlet, RouterProvider} from '@tanstack/react-router'
-import { useContext, useEffect } from 'react'
-import { authContext, useAuth } from './Auth'
+import { useEffect } from 'react'
+import { useAuth } from './Auth'
 import type { AuthContext } from './Auth'
-import { authenticate, fetchLists } from '../api'
+import { authenticate } from '../api'
 import Home from './Home'
 import Spinner from './Spinner'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
@@ -31,6 +31,7 @@ const rootRoute = createRouteConfig({
 
 }})
 
+/*
 const withAuth = rootRoute.createRoute({
   id: "withAuth",
   beforeLoad: () => {
@@ -40,43 +41,21 @@ const withAuth = rootRoute.createRoute({
      }
    },
 })
+*/
 
 //-------------------------------------------
 // Routes
 //-------------------------------------------
 
 
-const homeRoute = withAuth.createRoute({ 
+const homeRoute = rootRoute.createRoute({ 
  path: "/",
  component:Home
 })
 
-function Auth(){
-  const { 
-    params: {
-      sessionKey
-    },
-    loaderData: {
-      userDetails
-    }
-  } = useMatch(authRoute.id)
-  
-  const auth = useAuth()
-
-  useEffect(() => {
-    auth.login(userDetails, sessionKey)
-  }, [auth, sessionKey, userDetails])
-
-  return (
-    <>
-      Auth successful! <br />
-      <router.Link to="/"> Close </router.Link>
-    </>)
-}
 
 const authRoute = rootRoute.createRoute({
   path: "/auth/$sessionKey",
-  component:Auth,
   parseParams: ({ sessionKey }) => ({
     sessionKey: sessionKey
   }),
@@ -85,27 +64,32 @@ const authRoute = rootRoute.createRoute({
     return {
       userDetails: await authenticate(sessionKey),
     }
-  }
-})
+  },
+  component: function Auth() {
+    const { 
+      params: {
+        sessionKey
+      },
+      loaderData: {
+        userDetails
+      }
+    } = useMatch(authRoute.id)
 
-const authRoute1 = rootRoute.createRoute({
-  path: "/auth",
-  component: () => {
-    return (
-      <>
-        <router.Link to="/">Home</router.Link> <br />
-        <a href="https://dev.fredin.org/login">Login with google</a>
-      </>
-    )
+    const auth = useAuth()
 
-  }
+    useEffect(() => {
+      authenticate(sessionKey)
+      window.close()
+    }, [auth, sessionKey, userDetails])
+
+    return <>Lyckad inloggning!</>
+    }
 })
 
 
 const routeConfig = rootRoute.addChildren([
-  withAuth.addChildren([homeRoute]),
+  homeRoute,
   authRoute,
-  authRoute1
 ])
 
 const router = createReactRouter({ 

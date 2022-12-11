@@ -5,6 +5,7 @@ import { find } from 'ramda'
 import { useState } from 'react'
 import TodoList from './TodoList'
 import ListPanel from './ListPanel'
+import MenuBar from './MenuBar'
 
 
 
@@ -12,8 +13,9 @@ export default function Home() {
   const auth = useAuth()
 
   const { data: lists } = useQuery<List[]>({
-    queryKey: ["lists"],
-    queryFn: fetchLists
+    queryKey: ["lists", auth.status],
+    queryFn: fetchLists, 
+    enabled: auth.status === "loggedIn"
   });
 
   const [activeList, setActiveList] = useState<Id>()
@@ -21,9 +23,12 @@ export default function Home() {
   const [selected, setSelected] = useState<Id[]>([])
 
   return (
+    <div>
+    <MenuBar />
     <div
       className="flex pt-2 justify-center"
     >
+     
       {lists && 
         <ListPanel
           lists={lists ? lists : []}
@@ -41,6 +46,7 @@ export default function Home() {
           setSelected={setSelected}
         />
       }
+    </div>
     </div>
   )
 }

@@ -4,18 +4,9 @@ import './index.css';
 import { Routes } from './components/Routes';
 import reportWebVitals from './reportWebVitals';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { RouterProvider } from '@tanstack/react-router';
-import { useAuth, AuthProvider } from './components/Auth'
+import { AuthProvider } from './components/Auth'
 
-
-const queryClient = new QueryClient({
-// defaultOptions: {
-//     queries: {
-//       staleTime: 20*1000,
-//     },
-//   },
- }
-)
+const queryClient = new QueryClient()
 
 render(
   <StrictMode>

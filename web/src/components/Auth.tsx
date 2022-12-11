@@ -12,7 +12,7 @@ export {
 }
 
 type AuthContext = {
-  login: (_ : UserDetails, __: string) => void
+  login: (_ : UserDetails) => void
   logout: () => void
 } & AuthContextState
 
