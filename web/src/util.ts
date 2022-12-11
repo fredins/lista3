@@ -18,7 +18,8 @@ export {
   isRight,
   either,
   lefts,
-  rights
+  rights,
+  cons,
 }
 
 
@@ -80,4 +81,8 @@ function lefts<A, B>(xs: Either<A, B>[]): A[]{
 
 function rights<A, B>(xs: Either<A, B>[]): B[]{
   return map(x => either(_ => [], singleton, x), xs).flat()
+}
+
+function cons<A>(x : A, xs: A[]){
+  return [x, ...xs]
 }
