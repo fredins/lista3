@@ -1,8 +1,9 @@
 import { useMemo, Dispatch, useState } from 'react'
 import ListItem from './ListItem'
-import { map } from 'ramda'
+import { append, map } from 'ramda'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createList } from '../api'
+import { nil } from '../util'
 
 
 
@@ -19,9 +20,18 @@ export default function ListPanel({ lists, activeList, setActiveList } : Props )
 
   const createListMutation = useMutation(
     () => createList(newList), {
-    onSuccess: () => queryClient.invalidateQueries(["lists"]),
-    onError: (error: Error) => console.log(error.message),
-    onSettled: () => setNewList("")
+    onMutate: async (prevLists: List[]) => {
+      await queryClient.cancelQueries({ queryKey: ["lists"]})
+      queryClient.setQueryData(["lists"], append({id: nil, name: newList}, prevLists)) 
+      setNewList("")
+    },
+    onError: (error: Error, prevLists: List[]) => {
+      queryClient.setQueryData(["lists"], prevLists)
+      console.log(error.message)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(["lists"])
+    }
   })
 
   const listItems: JSX.Element[] = useMemo(
@@ -39,7 +49,7 @@ export default function ListPanel({ lists, activeList, setActiveList } : Props )
           queryClient.invalidateQueries(['todos'])
         }}
       />
-    ), lists ? lists : []
+    ), lists
     )
     , [lists, activeList, queryClient, setActiveList])
 
@@ -51,7 +61,8 @@ export default function ListPanel({ lists, activeList, setActiveList } : Props )
         className="mb-2"
         onSubmit={e => {
         e.preventDefault()
-        createListMutation.mutate()
+        if(newList === "") return
+        createListMutation.mutate(lists)
        }}
       >
         <input

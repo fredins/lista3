@@ -52,7 +52,7 @@ export default function MenuBar(){
                    underline-offset-1 text-sm text-blue-600 hover:text-blue-800"
    >
    <FaCog />
-   <p>Inställngar</p>
+   <p>Inställningar</p>
    </div>
 
    </div>

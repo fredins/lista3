@@ -20,8 +20,12 @@ type Props = {
 }
 
 export default function TodoList({ activeList, editing, setEditing, selected, setSelected }: Props): JSX.Element {
-  const { data } = useQuery<Todo[], Error>(["todos"], () => fetchAllTodos(activeList.id))
-  const todos = data ? data : []
+  const { data : todos } = useQuery<Todo[], Error>({
+    queryKey: ["todos"],
+    queryFn: () => fetchAllTodos(activeList.id),
+    initialData: []
+ 
+  })
 
   return (
     <div

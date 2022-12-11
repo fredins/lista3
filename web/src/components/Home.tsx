@@ -7,15 +7,14 @@ import TodoList from './TodoList'
 import ListPanel from './ListPanel'
 import MenuBar from './MenuBar'
 
-
-
 export default function Home() {
   const auth = useAuth()
 
   const { data: lists } = useQuery<List[]>({
-    queryKey: ["lists", auth.status],
+    queryKey: ["lists"],
     queryFn: fetchLists, 
-    enabled: auth.status === "loggedIn"
+    enabled: auth.status === "loggedIn",
+    initialData: []
   });
 
   const [activeList, setActiveList] = useState<Id>()
@@ -28,24 +27,23 @@ export default function Home() {
     <div
       className="flex pt-2 justify-center"
     >
-     
-      {lists && 
-        <ListPanel
-          lists={lists ? lists : []}
-          activeList={activeList}
-          setActiveList={setActiveList}
+    { auth.status === "loggedIn" &&
+    <ListPanel
+      lists={lists}
+      activeList={activeList}
+      setActiveList={setActiveList}
 
-        />
-      }
-      {lists && activeList &&
-        <TodoList
-          activeList={find(({ id }: List) => id === activeList)(lists)!}
-          editing={editing}
-          setEditing={setEditing}
-          selected={selected}
-          setSelected={setSelected}
-        />
-      }
+    />
+    }
+    {activeList &&
+      <TodoList
+        activeList={find(({ id }: List) => id === activeList)(lists)!}
+        editing={editing}
+        setEditing={setEditing}
+        selected={selected}
+        setSelected={setSelected}
+      />
+    }
     </div>
     </div>
   )
