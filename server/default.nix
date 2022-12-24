@@ -1,14 +1,6 @@
-let
-  pkgs = import <nixpkgs> { }; # pin the channel to ensure reproducibility!
+{ pkgs ? import <nixpkgs> { }, ... }:
+let 
+  resource-pool = pkgs.haskellPackages.resource-pool_0_3_1_0;
 in
-pkgs.haskellPackages.developPackage {
-  root = ./.;
-  withHoogle = true;
-  modifier = drv:
-  pkgs.haskell.lib.addBuildTools drv (
-    (with pkgs; [ghc gnumake])
-    ++
-    (with pkgs.haskellPackages; [ cabal-install BNFC alex happy ])
-  );
-}
 
+pkgs.haskellPackages.callCabal2nix "lista" ./. { inherit resource-pool; }
