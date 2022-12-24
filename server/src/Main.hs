@@ -9,7 +9,7 @@
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
 
-module Lista (module Lista) where
+module Main (module Main) where
 
 import           Data.Aeson                       (ToJSON)
 import           Data.List                        (lookup)
@@ -37,6 +37,7 @@ import           Network.Wai.Middleware.Cors      (cors, corsMethods,
                                                    corsOrigins,
                                                    corsRequestHeaders,
                                                    simpleCorsResourcePolicy)
+import           Paths_lista                      (getDataFileName)
 import           Relude
 import           Servant
 import           Servant.HTML.Blaze               (HTML)
@@ -53,8 +54,8 @@ import           Web.Cookie                       (SetCookie, def, parseCookies,
 
 oidcConf :: ByteString -> OidcConf
 oidcConf password = OidcConf
-  { redirectUri = "https://dev.fredin.org/login/cb"
-  , clientId = "223213082722-d8vun6oi1alfck9huskmsc1e17l6osd7.apps.googleusercontent.com"
+  { redirectUri = "https://server-lista.fredin.org/login/cb"
+  , clientId = "223213082722-843t5m7qmtevvlor7u3vmn3gophp22eq.apps.googleusercontent.com"
   , clientPassword = password
   }
 
@@ -63,8 +64,9 @@ main :: IO ()
 main = do
   pool     <- initConnectionPool defaultConnectInfo
   mgr      <- newManager tlsManagerSettings
-  password <- P.head . BC.lines <$> readFileBS "secrets"
+  password <- P.head . BC.lines <$> (readFileBS =<< getDataFileName "secrets")
   oidcEnv  <- initOidc $ oidcConf password
+  tls <- liftA2 tlsSettings (getDataFileName "./ssl/cert.pem") $ getDataFileName "./ssl/key.pem"
   withResource pool initDB
   let context' = context pool mgr
       server'  = server  pool mgr oidcEnv
@@ -77,7 +79,6 @@ main = do
     , corsRequestHeaders = ["Content-Type"]
     , corsMethods        = ["OPTIONS", "GET", "PUT", "POST"]
     }
-  tls  = tlsSettings "../ssl/cert.pem" "../ssl/key.pem"
   warp = setPort 4000 defaultSettings
 
 

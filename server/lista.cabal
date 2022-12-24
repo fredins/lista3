@@ -7,14 +7,18 @@ maintainer:         fredin.martin@gmail.com
 
 extra-source-files: CHANGELOG.md
 
+data-files: ssl/*.pem secrets
+
 executable lista
-    main-is:         Lista.hs
+    main-is:         Main.hs
 
     other-modules: 
       Lista.Db
       Lista.Oidc 
       Lista.Auxiliary
       Lista.ServerError
+      Paths_lista
+  
 
     build-depends:    base ^>=4.15.1.0
      , relude
