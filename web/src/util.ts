@@ -5,6 +5,7 @@ export type {
   Left,
   Right,
   Either,
+  Maybe
 }
 
 export {
@@ -20,6 +21,7 @@ export {
   lefts,
   rights,
   cons,
+  just,
 }
 
 
@@ -86,3 +88,11 @@ function rights<A, B>(xs: Either<A, B>[]): B[]{
 function cons<A>(x : A, xs: A[]){
   return [x, ...xs]
 }
+
+type Maybe<A> = NonNullable<A> | undefined;
+
+function just<A>(x : A): Maybe<A>{
+  return x ?? undefined
+}
+
+
