@@ -238,37 +238,12 @@ data Todo = Todo
   , listId :: UUID
   } deriving (Eq, Show, Generic)
 
-
 instance FromJSON Todo
-
-instance FromJSON (UUID -> Todo) where
-  parseJSON (Object o) = do
-    text   <- o .: "text"
-    active <- o .: "active"
-    color  <- o .: "color"
-    listId <- o .: "listId"
-    return (\id -> Todo id text active color listId)
-  parseJSON _ = empty
-
 instance ToJSON Todo
-
-instance ToJSON (UUID -> Todo) where
-  toJSON newTodo = object ["text" .= text, "active" .= active, "color" .= color]
-    where Todo{..} = newTodo nil
-
 instance ToField Todo where
-  toField Todo{..} = Many [toField id, toField text, toField active, toField color]
-
+  toField Todo{..} = Many [toField id, toField text, toField active, toField color, toField listId]
 instance FromRow Todo
-
 instance ToRow Todo
-
-instance ToSample Todo where
-  toSamples _ = singleSample $ Todo nil "Sill" True Gray nil
-
-instance ToSample (UUID -> Todo) where
-  toSamples _ = singleSample $ \id -> Todo id "Sill" True Gray nil
-
 instance Arbitrary Todo where
   arbitrary = do
     text <-elements ["Sill", "Dill", "Färskpotatis", "Gräddfil", "Snaps"]
@@ -276,6 +251,18 @@ instance Arbitrary Todo where
     color <-arbitrary
     return (Todo nil text active color nil)
 
+data NewTodo = NewTodo
+  { text   :: Text
+  , active :: Bool
+  , color  :: Color
+  , listId :: UUID
+  } deriving (Show, Generic)
+
+instance FromJSON NewTodo
+instance ToJSON NewTodo
+
+instance ToSample Todo where
+  toSamples _ = singleSample $ Todo nil "Sill" True Gray nil
 
 selectAllTodos :: Connection -> UUID -> IO [Todo]
 selectAllTodos conn = query conn "select * from todos where listId=?"
@@ -289,8 +276,9 @@ selectCompletedTodos conn = query conn "select * from todos where active=False a
 selectTodoById :: Connection -> UUID -> IO (Maybe  Todo)
 selectTodoById conn id = listToMaybe <$> query conn "select * from todos where id=?" id
 
-insertTodo :: Connection -> (UUID -> Todo) -> IO ()
-insertTodo conn mkTodo = nextRandom >>= insertTodo' conn . mkTodo
+insertTodo :: Connection -> NewTodo -> IO ()
+insertTodo conn NewTodo{..} = nextRandom >>= insertTodo' conn .
+  (\id -> Todo {id=id, text=text, active=active, color=color, listId=listId})
 
 insertTodo' :: Connection -> Todo -> IO ()
 insertTodo' conn = void . execute conn "insert into todos values (?, ?, ?, ?, ?)"
