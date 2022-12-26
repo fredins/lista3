@@ -10,9 +10,9 @@ export {
 }
 
 // Production
-// const server = "https://dev.fredin.org"
+const server = "https://lista.fredin.org/server"
 // Development
-const server = ""
+// const server = ""
 
 const privateServer = `${server}/private`
 
@@ -67,7 +67,6 @@ async function createNewTodo(newTodo: NewTodo): Promise<Response> {
       method: 'POST', 
       headers: { 
         'Content-Type': "application/json",
-        Origin: "127.0.0.1"
       }, 
       body: JSON.stringify(newTodo),
       credentials: 'include'
