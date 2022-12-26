@@ -1,9 +1,9 @@
-import { head } from 'ramda'
 import { useEffect } from 'react'
 import { FaCog } from 'react-icons/fa'
 import { GoPerson } from 'react-icons/go'
 import { authenticate } from '../api'
 import { useAuth } from './Auth'
+import { Maybe, just } from '../util'
 
 export default function MenuBar(){
   const auth = useAuth()
@@ -11,7 +11,7 @@ export default function MenuBar(){
   // Automatically login user if sessionKey is present
   useEffect(() => {
     if(auth.status === "loggedIn") return
-    const msessionKey = head(getCookie("sessionKey"))
+    const msessionKey = getCookie("sessionKey")
     if(!msessionKey) return
 
     async function updateContext(sessionKey: string) {
@@ -59,22 +59,27 @@ export default function MenuBar(){
    </div>
   )
 
+  
 
-  async function login(){
+ async function login(){
     if (auth.status === "loggedIn") return
-
-    const msessionKey = head(getCookie("sessionKey"))
-    const sessionKey = msessionKey ? msessionKey : await createNewSession()
-    const userDetails = await authenticate(sessionKey)
+    const mcookie = getCookie("sessionKey")
+    const msessionKey = mcookie ? mcookie : await createNewSession()
+    if(!msessionKey) return 
+    const userDetails = await authenticate(msessionKey)
     auth.login(userDetails) 
-}    
+  }     
 
-  async function createNewSession(): Promise<string>{
-    const win = window.open("https://dev.fredin.org/login", "_blank", "toolbar=0,location=0,menubar=0")
+  async function createNewSession(): Promise<Maybe<string>>{
+    const win = window.open("https://lista.fredin.org/server", "_blank", "toolbar=0,location=0,menubar=0")
+    let msessionKey: Maybe<string>;
+    window.addEventListener("message", event => {
+      if(event.origin !== "https://lista.fredin.org") return
+      msessionKey = just(event.data)
+    })
     return new Promise(resolve => {
       const interval = setInterval(() => {
-        if(!win!.closed) return
-        const msessionKey = head(getCookie("sessionKey"))
+        if (win?.closed) resolve(undefined)
         if(!msessionKey) return
         resolve(msessionKey)
         clearInterval(interval)
@@ -83,9 +88,10 @@ export default function MenuBar(){
   }
 }
 
-
-function getCookie(key: string): string[] {
+function getCookie(key: string): Maybe<string> {
   var match = document.cookie.match(new RegExp('(^| )' + key + '=([^;]+)'));
-  return match ? [match[2]] : [];
+  return match ? just(match[2]) : undefined;
 }
+
+
 
