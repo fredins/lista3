@@ -45,20 +45,19 @@ import           Servant.Server.Experimental.Auth (AuthHandler, AuthServerData,
                                                    mkAuthHandler)
 import           Web.Cookie                       (SetCookie, def, parseCookies,
                                                    sameSiteLax, sameSiteNone,
+                                                   setCookieDomain,
                                                    setCookieHttpOnly,
                                                    setCookieName,
                                                    setCookieSameSite,
                                                    setCookieSecure,
                                                    setCookieValue)
 
-
 oidcConf :: ByteString -> OidcConf
 oidcConf password = OidcConf
-  { redirectUri = "https://server-lista.fredin.org/login/cb"
+  { redirectUri = "https://lista.fredin.org/server/login/cb"
   , clientId = "223213082722-843t5m7qmtevvlor7u3vmn3gophp22eq.apps.googleusercontent.com"
   , clientPassword = password
   }
-
 
 main :: IO ()
 main = do
@@ -66,29 +65,28 @@ main = do
   mgr      <- newManager tlsManagerSettings
   password <- P.head . BC.lines <$> (readFileBS =<< getDataFileName "secrets")
   oidcEnv  <- initOidc $ oidcConf password
-  tls <- liftA2 tlsSettings (getDataFileName "./ssl/cert.pem") $ getDataFileName "./ssl/key.pem"
   withResource pool initDB
   let context' = context pool mgr
       server'  = server  pool mgr oidcEnv
 
-  runTLS tls warp . cors' $ serveWithContext api context' server'
+  runApplication $ serveWithContext api context' server'
 
-  where
-  cors' = (cors . const) $ Just simpleCorsResourcePolicy
-    { corsOrigins        = Just (["https://dev1.fredin.org"], True)
-    , corsRequestHeaders = ["Content-Type"]
-    , corsMethods        = ["OPTIONS", "GET", "PUT", "POST"]
-    }
-  warp = setPort 4000 defaultSettings
-
+runApplication :: Application -> IO ()
+runApplication app = do
+  let settings = setPort 4000 defaultSettings
+    -- corsMiddleware = (cors . const) $ Just simpleCorsResourcePolicy
+    --   { corsOrigins        = Just (["http://192.168.68.114:3000", "http://localhost:3000", "http://localhost:3000/", "https://lista.fredin.org"], True)
+    --   , corsRequestHeaders = ["Content-Type"]
+    --   , corsMethods        = ["OPTIONS", "GET", "PUT", "POST"]
+    --   }
+  tls <- liftA2 tlsSettings (getDataFileName "./ssl/cert.pem") $ getDataFileName "./ssl/key.pem"
+  runTLS tls settings app
 
 -- TODO
 instance HasContextEntry '[] (AuthHandler Request Session) where
   getContextEntry _ = error "error: getContextEntry"
 
 type instance AuthServerData (AuthProtect "cookie-auth") = Session
-
-
 
 context :: Pool Connection -> Manager -> Context '[AuthHandler Request Session]
 context pool mgr = authHandler pool mgr :. EmptyContext
@@ -113,26 +111,24 @@ authHandler pool mgr = mkAuthHandler checkCookie
     msession <- liftIO $ withResource pool (`selectSession` sessionKey)
     maybeToRightM (unauthorizedErr "No valid Session for sessionKey.") msession
 
-
 lookupCookie :: Request -> ByteString -> Maybe Text
 lookupCookie req name = do
   cookies <- lookup "cookie" $ requestHeaders req
   cookie <- lookup name $ parseCookies cookies
   pure (decodeUtf8 cookie)
 
-
 api :: Proxy Api
 api = Proxy
 
-type Api = Get '[HTML] Homepage
-      :<|> OidcApi NoContent
+type Api = "server" :> (
+           Get '[HTML] Homepage
+      :<|> OidcApi SuccessPage
       :<|> "private"      :> AuthProtect "cookie-auth" :> PrivateApi
       :<|> "ping"         :> Get '[PlainText] Text
-      :<|> "authenticate" :> QueryParam "sessionKey" Text :> Get '[JSON] (CookieHeader UserDetails)
+      :<|> "authenticate" :> QueryParam "sessionKey" Text :> Get '[JSON] (CookieHeader UserDetails))
 
 
 type CookieHeader = Headers '[Header "Set-Cookie" SetCookie]
-
 
 server :: Pool Connection -> Manager -> OidcEnv -> Server Api
 server pool mgr oidcEnv = pure Homepage
@@ -141,9 +137,9 @@ server pool mgr oidcEnv = pure Homepage
                      :<|> pure "Pong.\n"
                      :<|> handleAuthenticate pool
 
-handleSuccessfulLoggedIn :: Pool Connection -> AuthInfo -> Handler NoContent
+handleSuccessfulLoggedIn :: Pool Connection -> AuthInfo -> Handler SuccessPage
 handleSuccessfulLoggedIn pool AuthInfo{..} = do
-  sessionKey <- liftIO genRandomBS
+  sessionKey <- decodeUtf8 <$> liftIO genRandomBS
 
   -- Check if new user and act accordingly
   liftIO . withResource pool $ \conn -> do
@@ -154,13 +150,11 @@ handleSuccessfulLoggedIn pool AuthInfo{..} = do
       pure user
 
     -- Create session
-    whenNothingM_ (selectSession conn (decodeUtf8 sessionKey)) .
+    whenNothingM_ (selectSession conn sessionKey) .
       D.insertSession conn $
-      D.Session {sessionKey=decodeUtf8 sessionKey, userId=userId}
+      D.Session {sessionKey=sessionKey, userId=userId}
 
-  redirects $ "http://localhost:3000/auth/" <> sessionKey
-  pure NoContent
-
+  pure $ SuccessPage sessionKey
 
 handleAuthenticate :: Pool Connection -> Maybe Text -> Handler (CookieHeader UserDetails)
 handleAuthenticate _    Nothing           =  preconditionFailed "Missing query param sessionKey."
@@ -173,14 +167,12 @@ handleAuthenticate pool (Just sessionKey) = do
   let cookie = def
        { setCookieName = "sessionKey"
        , setCookieValue = encodeUtf8 sessionKey
-   --    , setCookieHttpOnly = True
-       , setCookieSameSite = Just sameSiteNone
-       , setCookieSecure   = True
+       -- , setCookieHttpOnly = True
+       , setCookieSameSite = Just sameSiteLax
+       -- , setCookieSecure = False
+       -- , setCookieDomain = Just "https://lista.fredin.org"
        }
-
   pure $ addHeader cookie userDetails
-
-
 
 type PrivateApi = "userDetails" :> Get '[JSON] UserDetails
              :<|> "lists"       :> Get '[JSON] [List]
@@ -188,7 +180,7 @@ type PrivateApi = "userDetails" :> Get '[JSON] UserDetails
              :<|> "todos"       :> QueryParam "listId" UUID
                                 :> QueryParam "active" Bool
                                 :> Get '[JSON] [Todo]
-             :<|> "newTodo"     :> ReqBody '[JSON] (UUID -> Todo)
+             :<|> "newTodo"     :> ReqBody '[JSON] NewTodo
                                 :> Post '[JSON] NoContent
              :<|> "updateTodo"  :> ReqBody '[JSON] Todo
                                 :> Post '[JSON] NoContent
@@ -236,7 +228,7 @@ privateServer pool Session{..} = userDetails
         Just True  -> selectActiveTodos conn listId
         Just False -> selectCompletedTodos conn listId
 
-  newTodo :: (UUID -> Todo) -> Handler NoContent
+  newTodo :: NewTodo -> Handler NoContent
   newTodo mkTodo = do
     liftIO $ withResource pool (`insertTodo` mkTodo)
     pure NoContent
@@ -246,11 +238,8 @@ privateServer pool Session{..} = userDetails
       liftIO $ withResource pool (`D.updateTodo` todo)
       pure NoContent
 
-
-
 userToUserDetails :: User -> UserDetails
 userToUserDetails User{name, email} = UserDetails {name=name, email=email}
-
 
 data UserDetails = UserDetails
   { name  :: Text

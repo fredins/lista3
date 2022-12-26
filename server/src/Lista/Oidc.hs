@@ -26,6 +26,7 @@ module Lista.Oidc
   , initOidc
   , genRandomBS
   , redirects
+  , SuccessPage (SuccessPage)
   )
 where
 
@@ -33,8 +34,7 @@ import           Control.Monad.Except        (MonadError, liftEither)
 import           Data.Aeson                  (FromJSON (..), (.:))
 import qualified Data.Aeson                  as JSON
 import qualified Data.Aeson.Types            as AeT
-import qualified Data.List                   as List
-import qualified Data.Text                   as Text
+import           Data.List                   ((!!))
 import           Jose.Jwt                    (Jwt (..), decodeClaims)
 import           Network.HTTP.Client         (Manager, newManager)
 import           Network.HTTP.Client.TLS     (tlsManagerSettings)
@@ -53,15 +53,12 @@ import           Data.Either.Extra           (mapLeft)
 import           Lista.Auxiliary
 import           Lista.ServerError
 
-
-
 type OidcApi a =
   "login" :> (
               Get '[JSON] NoContent
               :<|> "cb" :> QueryParam "error" Text
                         :> QueryParam "code" Text
                         :> Get '[HTML] a)
-
 
 data OidcEnv = OidcEnv
   { oidc           :: O.OIDC
@@ -73,12 +70,9 @@ data OidcEnv = OidcEnv
   , clientPassword :: ByteString
   }
 
-
 oidcServer :: OidcEnv -> (AuthInfo -> Handler a) -> Server (OidcApi a)
 oidcServer oidc handler = handleLogin oidc
                      :<|> handleLoggedIn oidc handler
-
-
 
 -- | Redirect user to the OpenID Provider
 handleLogin :: OidcEnv -> Handler NoContent
@@ -86,7 +80,6 @@ handleLogin oidcenv = do
   loc <- liftIO (genOidcUrl oidcenv)
   redirects loc
   pure NoContent
-
 
 -- | Check and process the OpenId response. Return the @handleSuccess@ handler as response.
 handleLoggedIn :: OidcEnv
@@ -110,7 +103,6 @@ handleLoggedIn oidcenv handleSuccess err mcode = do
     then handleSuccess authInfo
     else forbidden "Please verify your email"
 
-
 data OidcConf = OidcConf
   { redirectUri    :: ByteString
   , clientId       :: ByteString
@@ -131,11 +123,9 @@ initOidc OidcConf{..} = do
                , clientPassword = clientPassword
                }
 
-
 -- | gen a 302 redirect helper
 redirects :: MonadError ServerError m => ByteString -> m ()
 redirects url = throwError err302 { errHeaders = [("Location", url)]}
-
 
 genOidcUrl :: OidcEnv -> IO ByteString
 genOidcUrl OidcEnv{..} = do
@@ -152,7 +142,7 @@ genRandomBS = do
   Random.randomRs (0, n) g & take 42 & fmap toChar & readable 0 & encodeUtf8 & return
   where
     n = length letters - 1
-    toChar i = letters List.!! i
+    toChar i = letters !! i
     letters = ['A'..'Z'] <> ['0'..'9'] <> ['a'..'z']
     readable :: Int -> [Char] -> [Char]
     readable _ [] = []
@@ -165,7 +155,7 @@ genRandomBS = do
             _ -> 12
           block = take blocksize str
           rest = drop blocksize str
-      in if List.null rest
+      in if null rest
          then str
          else block <> "-" <> readable (i+1) rest
 
@@ -195,23 +185,37 @@ instance JSON.ToJSON AuthInfo where
                 , "sub"            JSON..= s
                 ]
 
+newtype SuccessPage = SuccessPage Text
+
+instance ToMarkup SuccessPage where
+  toMarkup (SuccessPage sessionKey) = H.docTypeHtml $ do
+    H.h1 $ H.toHtml ("Success: " <> sessionKey)
+    H.script $ H.toHtml ("window.opener.postMessage('" <> sessionKey <> "', '*')")
+    (H.button ! HA.onclick "window.close();") $ H.toHtml ("Close" :: Text)
+
+data Failure = Failure
+instance ToMarkup Failure where
+  toMarkup Failure = H.docTypeHtml $ do
+    H.h1 $ H.toHtml ("Login Failed" :: Text)
+    (H.button ! HA.onclick "window.close();") $ H.toHtml ("Close" :: Text)
+
 data Homepage = Homepage
 
 instance ToMarkup Homepage where
   toMarkup Homepage = H.docTypeHtml $ do
     H.head $ do
       H.title "OpenID Connect Servant Example"
-      H.style (H.toHtml ("body { font-family: monospace; font-size: 18px; }" :: Text.Text))
+      H.style (H.toHtml ("body { font-family: monospace; font-size: 18px; }" :: Text))
     H.body $ do
       H.h1 "OpenID Connect Servant Example"
       H.div $
-        H.a ! HA.href "/login" $ "Click here to login"
+        H.a ! HA.href "/server/login" $ "Click here to login"
       H.ul $ do
         H.li $ do
           H.span "API Key in Local storage: "
-          H.script (H.toHtml ("document.write(localStorage.getItem('api-key'));" :: Text.Text))
+          H.script (H.toHtml ("document.write(localStorage.getItem('api-key'));" :: Text))
         H.li $ do
           H.span "User ID in Local storage: "
-          H.script (H.toHtml ("document.write(localStorage.getItem('user-id'));" :: Text.Text))
+          H.script (H.toHtml ("document.write(localStorage.getItem('user-id'));" :: Text))
 
 
