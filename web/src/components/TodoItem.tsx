@@ -38,7 +38,6 @@ export default function TodoItem({ todo, mode, onModeChange }: Props) {
                todo={todo}
                mode={mode}
                onModeChange={onModeChange}
-               className="bg-white"
              />
     case "selected":
       return <ViewTodo
@@ -67,7 +66,7 @@ export default function TodoItem({ todo, mode, onModeChange }: Props) {
         className={`text-lg flex items-center py-1 cursor-pointer ${className}`}
         onClick={handleClick} >
         <Checkbox
-          key="test"
+          key={todo.id}
           active={todo.active}
           onClick={handleClickCheckbox}
           color={todo.color}

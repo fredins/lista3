@@ -61,10 +61,10 @@ export default function ListPanel({ lists } : Props ) {
         <input
           value={newList}
           onChange={e => setNewList(e.target.value)}
-          className="bg-white px-2 text-lg border-l border-y border-gray-300   w-24 outline-none"
+          className="px-2 text-lg border-l border-y border-gray-300   w-24 outline-none"
         />
         <button
-          className="bg-white px-2 text-lg border border-gray-300 rounded-r-sm "
+          className="px-2 text-lg border border-gray-300 rounded-r-sm "
          > Ny lista </button>
       </form>
       <ul className="pl-2">

@@ -47,6 +47,11 @@ export default function TodoList({ editing, setEditing, selected, setSelected }:
       <div
         className="divide-y divide-gray-300 p-4"
       >
+        <AddTodo
+          listId={activeList.id}
+          mode={editing === nil ? "editing" : "normal"}
+          onModeChange={curry(handleModeChange)(nil)}
+        />
         {
           map(t => (
             <UnmemoizedTodo
@@ -57,11 +62,6 @@ export default function TodoList({ editing, setEditing, selected, setSelected }:
             />
           ), mtodos)
         }
-        <AddTodo
-          listId={activeList.id}
-          mode={editing === nil ? "editing" : "normal"}
-          onModeChange={curry(handleModeChange)(nil)}
-        />
       </div>
     </div>
   )
