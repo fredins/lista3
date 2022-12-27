@@ -12,7 +12,7 @@ export default function Checkbox({ active, onClick, color }: Props): JSX.Element
   return (
     <label
       className={`
-        border rounded-[1px] inline-block w-4 h-4 min-w-[1rem] mx-2 
+        border rounded-[1px] inline-block w-6 h-6 min-w-[1.5rem] mx-2 
         shadow-inner-eq cursor-pointer
         ${caseOf_(color,
         { k: "gray", v: "border-gray-300 shadow-gray-200" },
@@ -25,7 +25,7 @@ export default function Checkbox({ active, onClick, color }: Props): JSX.Element
        `
       }
     >
-      {!active && <GoCheck size="14px" />}
+      {!active && <GoCheck size="22px" />}
       <input
         type="checkbox"
         className="hidden"
