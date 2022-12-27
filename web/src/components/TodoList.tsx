@@ -32,8 +32,6 @@ export default function TodoList({ editing, setEditing, selected, setSelected }:
   })
   
   if (!mtodos) return <Spinner />
-  
-  
 
   return (
     <div

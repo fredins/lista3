@@ -8,9 +8,10 @@ import { useActiveList } from './useActiveList'
 
 type Props = {
   lists : List[]
+  onNewActive : () => void
 }
 
-export default function ListPanel({ lists } : Props ) {
+export default function ListPanel({ lists, onNewActive } : Props ) {
   const queryClient = useQueryClient()
   const { activeList, setActiveList } = useActiveList()
   
@@ -40,11 +41,12 @@ export default function ListPanel({ lists } : Props ) {
         onClick={list1 => {
           if (activeList === just(list1)) return
           setActiveList(list) 
+          onNewActive()
         }}
       />
     ), lists
     )
-    , [lists, activeList, setActiveList])
+    , [lists, activeList, setActiveList, onNewActive])
 
   return (
      <div

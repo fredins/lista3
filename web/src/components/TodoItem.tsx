@@ -1,10 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useActiveList } from './useActiveList'
 
-import EditTodo from './EditTodo'
+import TodoForm from './TodoForm'
 import Checkbox from './Checkbox'
 import { updateTodo } from '../api'
 import { map } from 'ramda'
+import { omit } from '../util'
+import { useState } from 'react'
 
 type Mode = "normal"
           | "selected"
@@ -16,7 +18,7 @@ type Props = {
   onModeChange: (mode: Mode, requestedMode: Mode) => void
 }
 
-export default function TodoItem({ todo, mode, onModeChange }: Props) {
+export default function TodoItem({ todo, mode, onModeChange }: Props) : JSX.Element {
   const queryClient = useQueryClient()
   const { activeList } = useActiveList()
  
@@ -46,18 +48,24 @@ export default function TodoItem({ todo, mode, onModeChange }: Props) {
                onModeChange={onModeChange}
                className="bg-sky-100"
              />
-    case "editing":
-      return <EditTodo
-               todo={todo}
-               onExit={() => onModeChange(mode, "normal")}
-               onSubmit={handleSubmit}
-             />
+    case "editing": return <EditTodo />
   }
 
   function handleSubmit(todo: Todo, e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     updateTodoMutation.mutate(todo)
     onModeChange(mode, "normal")
+  }
+
+  function EditTodo(){
+     const [ text, setText ] = useState(todo.text)
+     return <TodoForm
+              todo={omit(todo, "text")}
+              onExit={() => onModeChange(mode, "normal")}
+              onSubmit={handleSubmit}
+              text={text}
+              setText={setText}
+            />
   }
 
   function ViewTodo({ todo, mode, onModeChange, className }: Props & { className?: string }): JSX.Element {

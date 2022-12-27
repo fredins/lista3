@@ -36,6 +36,7 @@ export default function Home() {
     { auth.status === "loggedIn" &&
     <ListPanel
       lists={lists}
+      onNewActive={() => setEditing(undefined)}
     />
     }
     { activeList &&

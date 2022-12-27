@@ -1,4 +1,4 @@
-import { find, map } from 'ramda'
+import { find, forEach, map } from 'ramda'
 
 export type {
   Case,
@@ -22,6 +22,7 @@ export {
   rights,
   cons,
   just,
+  omit,
 }
 
 
@@ -93,6 +94,11 @@ type Maybe<A> = NonNullable<A> | undefined;
 
 function just<A>(x : A): Maybe<A>{
   return x ?? undefined
+}
+function omit<A extends object, B extends keyof A>(obj: A, ...entries : B[]): A {
+  const o = structuredClone(obj)
+  forEach(entry => { delete o[entry]  }, entries)
+  return o
 }
 
 

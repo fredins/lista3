@@ -1,9 +1,10 @@
 import { AiOutlinePlus } from 'react-icons/ai'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 
-import EditTodo from './EditTodo'
+import TodoForm from './TodoForm'
 import { createNewTodo } from '../api'
 import { nil } from '../util'
+import { useState } from 'react'
 
 type Mode = "normal"
           | "selected"
@@ -17,6 +18,7 @@ type Props = {
 
 export default function AddTodo({ listId, mode, onModeChange }: Props) {
   const queryClient = useQueryClient()
+  const [ text, setText ] = useState("")
   
   const createTodoMutation = useMutation(newTodo => createNewTodo(newTodo), {
     onMutate: async (newTodo: NewTodo) => {
@@ -32,10 +34,12 @@ export default function AddTodo({ listId, mode, onModeChange }: Props) {
       return <Normal />
 
     case "editing":
-      return <EditTodo
-               todo={{ id:nil, text: "", active: true, color: "gray", listId: listId }}
+      return <TodoForm
+               todo={{ id:nil, active: true, color: "gray", listId: listId }}
                onExit={() => onModeChange(mode, "normal")}
                onSubmit={handleSubmit}
+               text={text}
+               setText={setText}
              />
   }
 
@@ -44,7 +48,7 @@ export default function AddTodo({ listId, mode, onModeChange }: Props) {
     e.preventDefault()
     const {id, text, active, color, listId} = todo
     createTodoMutation.mutate(id === nil ? { text, active, color, listId } : todo)
-    onModeChange(mode, "normal")
+    setText("")
   }  
 
   function Normal() {
