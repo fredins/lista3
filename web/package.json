@@ -35,6 +35,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build"
   },
+  "proxy": "https://lista.fredin.org/server",
   "eslintConfig": {
     "extends": [
       "react-app",

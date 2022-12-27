@@ -10,9 +10,9 @@ export {
 }
 
 // Production
-const server = "https://lista.fredin.org/server"
+// const server = "https://lista.fredin.org/server"
 // Development
-// const server = ""
+const server = ""
 
 const privateServer = `${server}/private`
 
