@@ -47,7 +47,7 @@ import           Web.Cookie                       (SetCookie, def, parseCookies,
                                                    sameSiteLax, sameSiteNone,
                                                    setCookieDomain,
                                                    setCookieHttpOnly,
-                                                   setCookieName,
+                                                   setCookieName, setCookiePath,
                                                    setCookieSameSite,
                                                    setCookieSecure,
                                                    setCookieValue)
@@ -169,6 +169,7 @@ handleAuthenticate pool (Just sessionKey) = do
        , setCookieValue = encodeUtf8 sessionKey
        -- , setCookieHttpOnly = True
        , setCookieSameSite = Just sameSiteLax
+       , setCookiePath = Just "/"
        -- , setCookieSecure = False
        -- , setCookieDomain = Just "https://lista.fredin.org"
        }
