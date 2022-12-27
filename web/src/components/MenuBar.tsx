@@ -83,7 +83,7 @@ export default function MenuBar(){
         if(!msessionKey) return
         resolve(msessionKey)
         clearInterval(interval)
-        win.close()
+        win?.close()
       }, 500)
    })
   }

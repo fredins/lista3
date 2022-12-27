@@ -4,7 +4,7 @@ import { caseOf_ } from "../util"
 
 type Props = {
   active: boolean
-  onClick: (e: React.MouseEvent<HTMLInputElement>) => void
+  onClick?: (e: React.MouseEvent<HTMLInputElement>) => void
   color: Color
 }
 
