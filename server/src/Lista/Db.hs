@@ -203,13 +203,23 @@ instance ToRow List
 instance ToSample List where
   toSamples _ = singleSample $ List nil "min lista"
 
+
+data JoinListListAccess = JoinListListAccess
+  { listId :: UUID
+  , userId :: Text
+  , name   :: Text
+  } deriving (Show, Generic)
+
+instance FromRow JoinListListAccess
+
 selectAllLists :: Connection -> Text -> IO [List]
 selectAllLists conn userId = do
-  (xs :: [JoinListListAccess]) <- query_ conn
+  (xs :: [JoinListListAccess]) <- query conn
     [sql|
       select listId, userId, name from lists
       join listAccess on lists.id=listAccess.listId
-    |]
+      where userId=?
+    |] userId
 
   let listId' = listId :: JoinListListAccess -> UUID
   concat <$> mapM (selectListById' conn  . listId') xs
@@ -335,10 +345,3 @@ instance ToRow Text where
 
 instance ToRow UUID where toRow uuid = [Escape $ toASCIIBytes uuid]
 
-data JoinListListAccess = JoinListListAccess
-  { listId :: UUID
-  , userId :: Text
-  , name   :: Text
-  } deriving (Show, Generic)
-
-instance FromRow JoinListListAccess
