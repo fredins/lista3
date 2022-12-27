@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useActiveList } from './useActiveList'
 
 import EditTodo from './EditTodo'
 import Checkbox from './Checkbox'
@@ -17,11 +18,14 @@ type Props = {
 
 export default function TodoItem({ todo, mode, onModeChange }: Props) {
   const queryClient = useQueryClient()
+  const { activeList } = useActiveList()
+ 
+  if (!activeList) throw new Error("TodoItem: activeList undefined")
 
   const updateTodoMutation = useMutation(updateTodo, {
     onMutate: async (todo: Todo) => {
       await queryClient.cancelQueries(["todos"])
-      queryClient.setQueryData(["todos"], 
+      queryClient.setQueryData(["todos", activeList.id], 
         (prev: Todo[] | undefined) => prev 
           ? map(t => t.id === todo.id ? todo : t, prev) 
           : undefined)

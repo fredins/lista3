@@ -28,6 +28,7 @@ export default function TodoList({ editing, setEditing, selected, setSelected }:
   const { data : mtodos } = useQuery<Todo[], Error>({
     queryKey: ["todos", activeList.id],
     queryFn: () => fetchAllTodos(activeList.id),
+    refetchInterval: 1000*6, // refetch every 10s
   })
   
   if (!mtodos) return <Spinner />

@@ -18,7 +18,9 @@ export default function Home() {
     queryFn: fetchLists, 
     enabled: auth.status === "loggedIn",
     onSuccess: curry(forEach<List>)
-      (x => queryClient.fetchQuery(["todos", x.id], () => fetchAllTodos(x.id)))  
+      (x => queryClient.fetchQuery(["todos", x.id], () => fetchAllTodos(x.id), { 
+      cacheTime: 1000*60*20
+      }))
   });
   const lists = data ?? []
 
