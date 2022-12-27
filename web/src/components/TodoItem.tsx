@@ -63,20 +63,24 @@ export default function TodoItem({ todo, mode, onModeChange }: Props) {
   function ViewTodo({ todo, mode, onModeChange, className }: Props & { className?: string }): JSX.Element {
     return (
       <div
-        className={`text-lg flex items-center py-1 cursor-pointer ${className}`}
-        onClick={handleClick} >
-        <Checkbox
-          key={todo.id}
-          active={todo.active}
-          onClick={handleClickCheckbox}
-          color={todo.color}
-        />
-        <p
-          className="pl-1  w-full"
-          onClick={handleClickLabel}
-        >
-          {todo.text}
-        </p>
+        className={`flex text-lg cursor-pointer ${className}`}
+        onClick={handleClick}>
+      <span 
+        className="flex items-center py-2" 
+        onClick={handleClickCheckbox}
+      >
+      <Checkbox
+        key={todo.id}
+        active={todo.active}
+        color={todo.color}
+      />
+      </span>
+      <p
+        className="pl-1  w-full flex items-center py-2"
+        onClick={handleClickLabel}
+      >
+        {todo.text}
+      </p>
       </div>
     )
 
