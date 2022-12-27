@@ -31,7 +31,7 @@ export default function EditTodo({todo, onExit, onSubmit }: Props): JSX.Element 
         className="flex flex-row justify-between space-x-1 mt-1"
       >
         <select
-          className="bg-white text-sm border border-gray-300 rounded-sm drop-shadow-sm outline-none"
+          className="bg-white border border-gray-300 rounded-sm drop-shadow-sm outline-none"
           defaultValue={color}
           onChange={e => setColor(e.target.value as Color)}
         >
@@ -46,12 +46,12 @@ export default function EditTodo({todo, onExit, onSubmit }: Props): JSX.Element 
           className="space-x-1"
         >
           <button
-            className="bg-white px-2 text-sm border border-gray-300 rounded-sm drop-shadow-sm"
+            className="bg-white px-2 border border-gray-300 rounded-sm drop-shadow-sm"
             type="button"
             onClick={onExit}
           >Avbryt</button>
           <button
-            className="bg-white px-2 text-sm border border-gray-300 rounded-sm drop-shadow-sm"
+            className="bg-white px-2 border border-gray-300 rounded-sm drop-shadow-sm"
           >Spara
           </button>
         </div>

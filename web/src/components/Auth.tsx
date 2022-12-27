@@ -6,7 +6,6 @@ export type {
 }
 
 export {
-  authContext,
   AuthProvider,
   useAuth
 }
@@ -32,18 +31,13 @@ function AuthProvider(props: { children: React.ReactNode }) {
     status: 'loggedOut'
   })
 
-  const login = (userDetails : UserDetails) => {
-    console.log("login!")
-    setState({ 
+  const login = (userDetails : UserDetails) => setState({ 
       status: 'loggedIn',
       userDetails: userDetails,
     })
-  }
 
-  const logout = () => {
-    console.log("logout!")
-    setState({ status: 'loggedOut' })
-  }
+  const logout = () => setState({ status: 'loggedOut' })
+  
 
   const contextValue = useMemo(
     () => ({

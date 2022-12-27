@@ -24,7 +24,7 @@ export default function MenuBar(){
 
   return (
    <div
-    className="bg-zinc-50 w-full h-6 flex justify-between px-4 text-sm"
+    className="bg-zinc-50 w-full h-6 flex justify-between px-4 text"
    >
 
    { /* Left */ }
@@ -37,19 +37,19 @@ export default function MenuBar(){
 
    { /* Right */ }
    <div 
-   className="flex space-x-4 items-center"
+   className="flex space-x-6 items-center"
    >
    <div 
    onClick={login}
    className="flex items-center space-x-1 cursor-pointer hover:underline 
-              underline-offset-1 text-sm text-blue-600 hover:text-blue-800"
+              underline-offset-1 text-blue-600 hover:text-blue-800 text-lg"
    >
    <GoPerson />
    <p>{ auth.status === "loggedOut" ? "Logga in" : auth.userDetails!.name }</p>
    </div>
 
    <div className="flex items-center space-x-1 cursor-pointer hover:underline 
-                   underline-offset-1 text-sm text-blue-600 hover:text-blue-800"
+                   underline-offset-1 text-blue-600 hover:text-blue-800 text-lg"
    >
    <FaCog />
    <p>Inställningar</p>
@@ -61,7 +61,7 @@ export default function MenuBar(){
 
   
 
- async function login(){
+  async function login(){
     if (auth.status === "loggedIn") return
     const mcookie = getCookie("sessionKey")
     const msessionKey = mcookie ? mcookie : await createNewSession()
@@ -69,9 +69,9 @@ export default function MenuBar(){
     const userDetails = await authenticate(msessionKey)
     auth.login(userDetails) 
   }     
-
+  
   async function createNewSession(): Promise<Maybe<string>>{
-    const win = window.open("https://lista.fredin.org/server", "_blank", "toolbar=0,location=0,menubar=0")
+    const win = window.open("https://lista.fredin.org/server/login", "_blank", "toolbar=0,location=0,menubar=0")
     let msessionKey: Maybe<string>;
     window.addEventListener("message", event => {
       if(event.origin !== "https://lista.fredin.org") return
@@ -83,6 +83,7 @@ export default function MenuBar(){
         if(!msessionKey) return
         resolve(msessionKey)
         clearInterval(interval)
+        win.close()
       }, 500)
    })
   }

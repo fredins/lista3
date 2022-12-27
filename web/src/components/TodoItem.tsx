@@ -60,7 +60,7 @@ export default function TodoItem({ todo, mode, onModeChange }: Props) {
   function ViewTodo({ todo, mode, onModeChange, className }: Props & { className?: string }): JSX.Element {
     return (
       <div
-        className={`flex items-center py-1 cursor-pointer ${className}`}
+        className={`text-lg flex items-center py-1 cursor-pointer ${className}`}
         onClick={handleClick} >
         <Checkbox
           key="test"

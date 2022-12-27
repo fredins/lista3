@@ -6,35 +6,42 @@ import { fetchAllTodos } from '../api'
 import UnmemoizedTodo from './TodoItem'
 import AddTodo from './AddTodo'
 import { nil } from '../util'
+import { useActiveList } from './useActiveList'
+import Spinner from './Spinner'
 
 type Mode = "normal"
           | "selected"
           | "editing"
 
 type Props = {
-  activeList: List
   editing: Id | undefined
   setEditing: Dispatch<Id | undefined>
   selected: Id[]
   setSelected: Dispatch<Id[]>
 }
 
-export default function TodoList({ activeList, editing, setEditing, selected, setSelected }: Props): JSX.Element {
-  const { data : todos } = useQuery<Todo[], Error>({
-    queryKey: ["todos"],
+export default function TodoList({ editing, setEditing, selected, setSelected }: Props): JSX.Element {
+  const { activeList } = useActiveList()
+
+  if (!activeList) throw new Error("TodoList: activeList undefined")
+
+  const { data : mtodos } = useQuery<Todo[], Error>({
+    queryKey: ["todos", activeList.id],
     queryFn: () => fetchAllTodos(activeList.id),
-    initialData: []
- 
   })
+  
+  if (!mtodos) return <Spinner />
+  
+  
 
   return (
     <div
       className="mx-2 border w-96 drop-shadow-sm"
     >
       <div
-      className="bg-zinc-50 h-8 border-b px-2 flex flex-col justify-center"
+      className="bg-zinc-50 h-8 border-b px-2 flex flex-col justify-center text-lg"
       >
-      {activeList.name}
+      { activeList.name }
       </div>
       <div
         className="divide-y divide-gray-300 p-4"
@@ -47,7 +54,7 @@ export default function TodoList({ activeList, editing, setEditing, selected, se
               mode={getMode(t.id)}
               onModeChange={curry(handleModeChange)(t.id)}
             />
-          ), todos)
+          ), mtodos)
         }
         <AddTodo
           listId={activeList.id}

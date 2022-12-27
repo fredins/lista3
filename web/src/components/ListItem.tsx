@@ -1,21 +1,23 @@
+import { just } from "../util"
+import { useActiveList } from "./useActiveList"
+
 type Props = {
-  name       : string
-  id         : Id
-  onClick    : (_:Id) => void
-  activeList : Id | undefined
+  list    : List
+  onClick : (_:List) => void
 }
 
-export default function ListItem({ name, id, onClick, activeList } : Props) {
+export default function ListItem({ list, onClick } : Props) {
+  const { activeList } = useActiveList()
 
   return (
     <li
     className={
-      `cursor-pointer hover:underline underline-offset-1 text-sm text-blue-600
-       hover:text-blue-800 ${ activeList === id ? "text-blue-800" : ""}`
+      `cursor-pointer hover:underline underline-offset-1 text-blue-600 text-lg
+       hover:text-blue-800 ${ activeList === just(list) ? "text-blue-800" : ""}`
     }
-    onClick={() => onClick(id)}
+    onClick={() => onClick(list)}
     >
-    { name }
+    { list.name }
     </li>
   )
 }

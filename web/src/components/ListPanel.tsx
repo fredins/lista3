@@ -1,20 +1,18 @@
-import { useMemo, Dispatch, useState } from 'react'
+import { useMemo, useState } from 'react'
 import ListItem from './ListItem'
 import { append, map } from 'ramda'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createList } from '../api'
-import { nil } from '../util'
-
-
+import { just, nil } from '../util'
+import { useActiveList } from './useActiveList'
 
 type Props = {
-  lists         : List[]
-  activeList    : Id | undefined
-  setActiveList : Dispatch<Id>
+  lists : List[]
 }
 
-export default function ListPanel({ lists, activeList, setActiveList } : Props ) {
+export default function ListPanel({ lists } : Props ) {
   const queryClient = useQueryClient()
+  const { activeList, setActiveList } = useActiveList()
   
   const [newList, setNewList] = useState("")
 
@@ -35,23 +33,18 @@ export default function ListPanel({ lists, activeList, setActiveList } : Props )
   })
 
   const listItems: JSX.Element[] = useMemo(
-    () => map(({ id, name }) => (
+    () => map(list => (
       <ListItem
-        key={id}
-        activeList={activeList}
-        name={name}
-        id={id}
-        onClick={id => {
-          if (activeList === id) {
-            return
-          }
-          setActiveList(id)
-          queryClient.invalidateQueries(['todos'])
+        key={list.id}
+        list={list}
+        onClick={list1 => {
+          if (activeList === just(list1)) return
+          setActiveList(list) 
         }}
       />
     ), lists
     )
-    , [lists, activeList, queryClient, setActiveList])
+    , [lists, activeList, setActiveList])
 
   return (
      <div
@@ -68,10 +61,10 @@ export default function ListPanel({ lists, activeList, setActiveList } : Props )
         <input
           value={newList}
           onChange={e => setNewList(e.target.value)}
-          className="bg-white px-2 text-sm border-l border-y border-gray-300   w-24 outline-none"
+          className="bg-white px-2 text-lg border-l border-y border-gray-300   w-24 outline-none"
         />
         <button
-          className="bg-white px-2 text-sm border border-gray-300 rounded-r-sm "
+          className="bg-white px-2 text-lg border border-gray-300 rounded-r-sm "
          > Ny lista </button>
       </form>
       <ul className="pl-2">

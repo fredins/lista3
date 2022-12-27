@@ -1,20 +1,25 @@
 import { render } from 'react-dom';
 import { StrictMode } from 'react'
 import './index.css';
-import { Routes } from './components/Routes';
 import reportWebVitals from './reportWebVitals';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from './components/Auth'
+import Home from './components/Home';
+import { ActiveListProvider } from './components/useActiveList';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const queryClient = new QueryClient()
 
 render(
   <StrictMode>
-      <QueryClientProvider client={queryClient}>
-       <AuthProvider>
-         <Routes />
-       </AuthProvider>
-      </QueryClientProvider>
+  <QueryClientProvider client={queryClient}>
+  <AuthProvider>
+  <ActiveListProvider>
+  <Home />
+  </ActiveListProvider>
+  </AuthProvider>
+  <ReactQueryDevtools />
+  </QueryClientProvider>
   </StrictMode>,
   document.getElementById('root')
 );

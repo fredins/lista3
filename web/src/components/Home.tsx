@@ -1,23 +1,27 @@
-import { fetchLists } from '../api'
-import { useQuery } from '@tanstack/react-query'
+import { fetchAllTodos, fetchLists } from '../api'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from './Auth'
-import { find } from 'ramda'
+import { forEach, curry } from 'ramda'
 import { useState } from 'react'
 import TodoList from './TodoList'
 import ListPanel from './ListPanel'
 import MenuBar from './MenuBar'
+import { useActiveList } from './useActiveList'
 
 export default function Home() {
   const auth = useAuth()
+  const queryClient = useQueryClient()
+  const { activeList } = useActiveList()
 
-  const { data: lists } = useQuery<List[]>({
+  const { data } = useQuery<List[]>({
     queryKey: ["lists"],
     queryFn: fetchLists, 
     enabled: auth.status === "loggedIn",
-    initialData: []
+    onSuccess: curry(forEach<List>)
+      (x => queryClient.fetchQuery(["todos", x.id], () => fetchAllTodos(x.id)))  
   });
+  const lists = data ?? []
 
-  const [activeList, setActiveList] = useState<Id>()
   const [editing, setEditing] = useState<Id>()
   const [selected, setSelected] = useState<Id[]>([])
 
@@ -30,19 +34,15 @@ export default function Home() {
     { auth.status === "loggedIn" &&
     <ListPanel
       lists={lists}
-      activeList={activeList}
-      setActiveList={setActiveList}
-
     />
     }
-    {activeList &&
-      <TodoList
-        activeList={find(({ id }: List) => id === activeList)(lists)!}
-        editing={editing}
-        setEditing={setEditing}
-        selected={selected}
-        setSelected={setSelected}
-      />
+    { activeList &&
+    <TodoList
+      editing={editing}
+      setEditing={setEditing}
+      selected={selected}
+      setSelected={setSelected}
+    />
     }
     </div>
     </div>
