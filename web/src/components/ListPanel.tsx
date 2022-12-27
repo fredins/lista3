@@ -20,9 +20,9 @@ export default function ListPanel({ lists, onNewActive } : Props ) {
   const createListMutation = useMutation(
     () => createList(newList), {
     onMutate: async (prevLists: List[]) => {
-      await queryClient.cancelQueries({ queryKey: ["lists"]})
       queryClient.setQueryData(["lists"], append({id: nil, name: newList}, prevLists)) 
       setNewList("")
+      await queryClient.cancelQueries({ queryKey: ["lists"]})
     },
     onError: (error: Error, prevLists: List[]) => {
       queryClient.setQueryData(["lists"], prevLists)

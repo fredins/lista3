@@ -26,11 +26,11 @@ export default function TodoItem({ todo, mode, onModeChange }: Props) : JSX.Elem
 
   const updateTodoMutation = useMutation(updateTodo, {
     onMutate: async (todo: Todo) => {
-      await queryClient.cancelQueries(["todos"])
       queryClient.setQueryData(["todos", activeList.id], 
         (prev: Todo[] | undefined) => prev 
           ? map(t => t.id === todo.id ? todo : t, prev) 
           : undefined)
+      await queryClient.cancelQueries(["todos"])
     }
   })
 

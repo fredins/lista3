@@ -22,9 +22,9 @@ export default function AddTodo({ listId, mode, onModeChange }: Props) {
   
   const createTodoMutation = useMutation(newTodo => createNewTodo(newTodo), {
     onMutate: async (newTodo: NewTodo) => {
+      queryClient.setQueryData(["todos", listId], (prev: Todo[] | undefined) => prev ? 
+        [...prev, {...newTodo, id: "optimistic-todo"}] : undefined)
       await queryClient.cancelQueries(['todos'])
-      queryClient.setQueryData(["todos"], (prev: Todo[] | undefined) => prev ? 
-        [...prev, {...newTodo, id: nil}] : undefined)
     },
     onSuccess: () => queryClient.invalidateQueries(["todos"])
   })
