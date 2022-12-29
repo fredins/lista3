@@ -8,6 +8,7 @@ import AddTodo from './AddTodo'
 import { ClassName, nil } from '../util'
 import { useActiveList } from './useActiveList'
 import Spinner from './Spinner'
+import { Desktop } from './MediaQuery'
 
 type Mode = "normal"
           | "selected"
@@ -38,14 +39,16 @@ export default function TodoList(
 
   return (
     <div
-      className={`border w-96 drop-shadow-sm ${className}`}
+      className={`sm:border w-96 drop-shadow-sm ${className}`}
     >
+    <Desktop>  
     <div
     className="bg-zinc-50 h-8 border-b px-2 flex flex-col justify-center 
                relative text-lg"
     >
     { activeList.name }
     </div>
+    </Desktop>
     <div
       className="divide-y divide-gray-300 p-4"
     >

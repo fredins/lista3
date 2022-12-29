@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from './components/Auth'
 import Home from './components/Home';
 import { ActiveListProvider } from './components/useActiveList';
+import { SidebarProvider } from './components/useSidebar';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const queryClient = new QueryClient()
@@ -15,7 +16,9 @@ render(
   <QueryClientProvider client={queryClient}>
   <AuthProvider>
   <ActiveListProvider>
+  <SidebarProvider>
   <Home />
+  </SidebarProvider>
   </ActiveListProvider>
   </AuthProvider>
   <ReactQueryDevtools />

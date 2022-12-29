@@ -32,7 +32,6 @@ export default function Home() {
   function DesktopHome() {
     return (
     <div>
-    <MenuBar />
     <div
       className="flex pt-2 justify-center "
     >
@@ -70,8 +69,29 @@ export default function Home() {
     )
   }
 
-  return <AdaptiveView 
+  function MobileHome(){
+    return (
+    <div>
+    { activeList &&
+    <TodoList
+      className='w-screen'
+      editing={editing}
+      setEditing={setEditing}
+      selected={selected}
+      setSelected={setSelected}
+    />
+    }
+    </div>
+    )
+  }
+
+  return (
+  <div>
+  <MenuBar />
+  <AdaptiveView 
            desktop={<DesktopHome/>}
-           mobile={<p>hello</p>}
+           mobile={<MobileHome />}
          />
+  </div>
+  )
 }

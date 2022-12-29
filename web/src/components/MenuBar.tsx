@@ -1,12 +1,17 @@
 import { useEffect } from 'react'
 import { FaCog } from 'react-icons/fa'
 import { GoPerson } from 'react-icons/go'
+import { FiMenu } from 'react-icons/fi'
 import { authenticate } from '../api'
 import { useAuth } from './Auth'
 import { Maybe, just } from '../util'
+import { Mobile } from './MediaQuery'
+import { useSidebar } from './useSidebar'
+import { useActiveList } from './useActiveList'
 
 export default function MenuBar(){
   const auth = useAuth()
+  const { toggleSidebar } = useSidebar()
 
   // Automatically login user if sessionKey is present
   useEffect(() => {
@@ -22,41 +27,57 @@ export default function MenuBar(){
     updateContext(msessionKey)
   }, [auth])
 
+  const { activeList } = useActiveList()
+
   return (
-   <div
-    className="bg-zinc-50 w-full h-6 flex justify-between px-4 text"
-   >
+  <div
+   className="bg-zinc-50 w-full flex justify-between px-4 text-xl py-1 
+             border-b border-zinc-300"
+  >
 
-   { /* Left */ }
-   <div
-   className="flex"
-   >
-   { /* TODO display hamburger icon on media query breakpoint */ }
-   </div>
+  { /* Left */ }
+  <div
+  className="flex"
+  >
+  { /* TODO display hamburger icon on media query breakpoint */ }
+  <Mobile>
+  <>
+  <div 
+    className="flex items-center cursor-pointer text-blue-600
+               hover:text-blue-800"
+    onClick={toggleSidebar}
+  >
+  <FiMenu/> 
+  </div>
+
+  { activeList && <p className='ml-3'> { activeList.name } </p> }
+  </>
+  </Mobile> 
+  </div>
 
 
-   { /* Right */ }
-   <div 
-   className="flex space-x-6 items-center"
-   >
-   <div 
-   onClick={login}
-   className="flex items-center space-x-1 cursor-pointer hover:underline 
-              underline-offset-1 text-blue-600 hover:text-blue-800 text-lg"
-   >
-   <GoPerson />
-   <p>{ auth.status === "loggedOut" ? "Logga in" : auth.userDetails!.name }</p>
-   </div>
+  { /* Right */ }
+  <div 
+  className="flex space-x-6 items-center"
+  >
+  <div 
+  onClick={login}
+  className="flex items-center space-x-1 cursor-pointer hover:underline 
+             underline-offset-1 text-blue-600 hover:text-blue-800"
+  >
+  <GoPerson />
+  <p>{ auth.status === "loggedOut" ? "Logga in" : auth.userDetails!.name }</p>
+  </div>
 
-   <div className="flex items-center space-x-1 cursor-pointer hover:underline 
-                   underline-offset-1 text-blue-600 hover:text-blue-800 text-lg"
-   >
-   <FaCog />
-   <p>Inställningar</p>
-   </div>
+  <div className="flex items-center space-x-1 cursor-pointer hover:underline 
+                  underline-offset-1 text-blue-600 hover:text-blue-800"
+  >
+  <FaCog />
+  <p>Inställningar</p>
+  </div>
 
-   </div>
-   </div>
+  </div>
+  </div>
   )
 
   
