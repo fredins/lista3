@@ -63,7 +63,7 @@ export default function ListPanel({ lists, onNewActive } : Props ) {
         <input
           value={newList}
           onChange={e => setNewList(e.target.value)}
-          className="px-2 text-lg border-l border-y border-gray-300   w-24 outline-none"
+          className="px-2 text-lg border-l border-y border-gray-300 w-24 outline-none"
         />
         <button
           className="px-2 text-lg border border-gray-300 rounded-r-sm "

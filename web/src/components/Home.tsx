@@ -7,13 +7,14 @@ import TodoList from './TodoList'
 import ListPanel from './ListPanel'
 import MenuBar from './MenuBar'
 import { useActiveList } from './useActiveList'
+import SharePanel from './SharePanel'
 
 export default function Home() {
   const auth = useAuth()
   const queryClient = useQueryClient()
   const { activeList } = useActiveList()
 
-  const { data } = useQuery<List[]>({
+  const { data : lists } = useQuery<List[]>({
     queryKey: ["lists"],
     queryFn: fetchLists, 
     enabled: auth.status === "loggedIn",
@@ -22,7 +23,6 @@ export default function Home() {
       cacheTime: 1000*60*20
       }))
   });
-  const lists = data ?? []
 
   const [editing, setEditing] = useState<Id>()
   const [selected, setSelected] = useState<Id[]>([])
@@ -33,12 +33,19 @@ export default function Home() {
     <div
       className="flex pt-2 justify-center"
     >
+    <div>
     { auth.status === "loggedIn" &&
     <ListPanel
-      lists={lists}
+      lists={lists ?? []}
       onNewActive={() => setEditing(undefined)}
     />
     }
+    { lists &&  
+    <SharePanel 
+      className='max-w-fit' 
+    />
+    }
+    </div>
     { activeList &&
     <TodoList
       editing={editing}

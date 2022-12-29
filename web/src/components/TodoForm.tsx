@@ -33,7 +33,8 @@ export default function TodoForm({todo, onExit, onSubmit, text, setText }: Props
       className="flex flex-row justify-between space-x-1 mt-1"
     >
     <select
-      className="border border-gray-300 rounded-sm drop-shadow-sm outline-none bg-white"
+      className="border border-gray-300 rounded-sm drop-shadow-sm outline-none 
+                 bg-white"
       defaultValue={color}
       onChange={e => setColor(e.target.value as Color)}
     >
