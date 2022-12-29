@@ -5,7 +5,8 @@ export type {
   Left,
   Right,
   Either,
-  Maybe
+  Maybe,
+  ClassName,
 }
 
 export {
@@ -100,5 +101,7 @@ function omit<A extends object, B extends keyof A>(obj: A, ...entries : B[]): A 
   forEach(entry => { delete o[entry]  }, entries)
   return o
 }
+
+type ClassName = { className? : string }
 
 
