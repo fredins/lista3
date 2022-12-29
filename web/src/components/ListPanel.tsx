@@ -3,7 +3,7 @@ import ListItem from './ListItem'
 import { append, map } from 'ramda'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createList } from '../api'
-import { just, nil } from '../util'
+import { ClassName, just, nil } from '../util'
 import { useActiveList } from './useActiveList'
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
   onNewActive : () => void
 }
 
-export default function ListPanel({ lists, onNewActive } : Props ) {
+export default function ListPanel({ lists, onNewActive, className } : Props & ClassName) {
   const queryClient = useQueryClient()
   const { activeList, setActiveList } = useActiveList()
   
@@ -50,7 +50,7 @@ export default function ListPanel({ lists, onNewActive } : Props ) {
 
   return (
      <div
-      className="p-2 border bg-zinc-50 h-fit rounded-sm drop-shadow-sm"
+      className={`p-2 border bg-zinc-50 rounded-sm drop-shadow-sm ${className}`}
      >
       <form 
         className="mb-2"

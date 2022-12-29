@@ -24,7 +24,7 @@ export default function SharePanel( { className } : ClassName ){
   )
   
   return (
-  <div className={`border-b md:border md:drop-shadow-sm ${className}`}>
+  <div className={`border-b border drop-shadow-sm ${className}`}>
   <div
   className="bg-zinc-100 h-8 border-b px-2 flex flex-col justify-center text-lg"
   >

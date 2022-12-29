@@ -8,6 +8,7 @@ import ListPanel from './ListPanel'
 import MenuBar from './MenuBar'
 import { useActiveList } from './useActiveList'
 import SharePanel from './SharePanel'
+import { AdaptiveView } from './MediaQuery'
 
 export default function Home() {
   const auth = useAuth()
@@ -27,27 +28,37 @@ export default function Home() {
   const [editing, setEditing] = useState<Id>()
   const [selected, setSelected] = useState<Id[]>([])
 
-  return (
+
+  function DesktopHome() {
+    return (
     <div>
     <MenuBar />
     <div
-      className="flex pt-2 justify-center"
+      className="flex pt-2 justify-center "
     >
-    <div>
+    { /* Left column */ }
+    <div className='space-y-4 flex-row'>
+    { /* ListPanel */ }
     { auth.status === "loggedIn" &&
     <ListPanel
+      className=''
       lists={lists ?? []}
       onNewActive={() => setEditing(undefined)}
     />
     }
+
+    { /* SharePanel */ }
+    <div className='flex justify-end'>
     { lists &&  
-    <SharePanel 
-      className='max-w-fit' 
-    />
+    <SharePanel className='w-fit h-fit' />
     }
     </div>
+    </div>
+ 
+    { /* Right column */ }
     { activeList &&
     <TodoList
+      className='ml-4 h-fit'
       editing={editing}
       setEditing={setEditing}
       selected={selected}
@@ -56,5 +67,11 @@ export default function Home() {
     }
     </div>
     </div>
-  )
+    )
+  }
+
+  return <AdaptiveView 
+           desktop={<DesktopHome/>}
+           mobile={<p>hello</p>}
+         />
 }

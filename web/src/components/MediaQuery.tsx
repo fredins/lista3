@@ -8,10 +8,13 @@ export {
   Mobile,
 }
 
+const desktopMinWidth = 640
+const mobileMaxWidth = desktopMinWidth - 1
+
 const useDesktopMediaQuery = () =>
-  useMediaQuery({ query: "(min-width: 1280px)" })
+  useMediaQuery({ minWidth: desktopMinWidth })
 const useMobileMediaQuery = () => 
-  useMediaQuery({ query: "(max-width: 767px)" })
+  useMediaQuery({ maxWidth: mobileMaxWidth })
 
 type ChildrenProp = { children : JSX.Element }
 
@@ -27,7 +30,7 @@ type Props = {
 
 function AdaptiveView({ desktop, mobile }: Props): JSX.Element {
   return (
-    <MediaQuery minWidth={768} >
+    <MediaQuery minWidth={desktopMinWidth} >
       {(matches: boolean) => matches
         ? desktop
         : mobile

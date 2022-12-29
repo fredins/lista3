@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { fetchAllTodos } from '../api'
 import UnmemoizedTodo from './TodoItem'
 import AddTodo from './AddTodo'
-import { nil } from '../util'
+import { ClassName, nil } from '../util'
 import { useActiveList } from './useActiveList'
 import Spinner from './Spinner'
 
@@ -20,7 +20,10 @@ type Props = {
   setSelected: Dispatch<Id[]>
 }
 
-export default function TodoList({ editing, setEditing, selected, setSelected }: Props): JSX.Element {
+export default function TodoList(
+  { editing, setEditing, selected, setSelected, className }: Props & ClassName
+): JSX.Element {
+
   const { activeList } = useActiveList()
 
   if (!activeList) throw new Error("TodoList: activeList undefined")
@@ -35,32 +38,33 @@ export default function TodoList({ editing, setEditing, selected, setSelected }:
 
   return (
     <div
-      className="mx-2 border w-96 drop-shadow-sm"
+      className={`border w-96 drop-shadow-sm ${className}`}
     >
-      <div
-      className="bg-zinc-50 h-8 border-b px-2 flex flex-col justify-center text-lg"
-      >
-      { activeList.name }
-      </div>
-      <div
-        className="divide-y divide-gray-300 p-4"
-      >
-        <AddTodo
-          listId={activeList.id}
-          mode={editing === nil ? "editing" : "normal"}
-          onModeChange={curry(handleModeChange)(nil)}
+    <div
+    className="bg-zinc-50 h-8 border-b px-2 flex flex-col justify-center 
+               relative text-lg"
+    >
+    { activeList.name }
+    </div>
+    <div
+      className="divide-y divide-gray-300 p-4"
+    >
+    <AddTodo
+      listId={activeList.id}
+      mode={editing === nil ? "editing" : "normal"}
+      onModeChange={curry(handleModeChange)(nil)}
+    />
+    {
+      map(t => (
+        <UnmemoizedTodo
+          key={t.id}
+          todo={t}
+          mode={getMode(t.id)}
+          onModeChange={curry(handleModeChange)(t.id)}
         />
-        {
-          map(t => (
-            <UnmemoizedTodo
-              key={t.id}
-              todo={t}
-              mode={getMode(t.id)}
-              onModeChange={curry(handleModeChange)(t.id)}
-            />
-          ), mtodos)
-        }
-      </div>
+      ), mtodos)
+    }
+    </div>
     </div>
   )
 
