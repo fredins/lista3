@@ -1,16 +1,36 @@
-import MediaQuery from 'react-responsive'
+import MediaQuery, { useMediaQuery } from 'react-responsive'
 
-type Props = {
-  Mobile: JSX.Element
-  Desktop: JSX.Element
+export {
+  AdaptiveView,
+  useDesktopMediaQuery,
+  useMobileMediaQuery,
+  Desktop,
+  Mobile,
 }
 
-export function DiffViews({ Mobile, Desktop }: Props,): JSX.Element {
+const useDesktopMediaQuery = () =>
+  useMediaQuery({ query: "(min-width: 1280px)" })
+const useMobileMediaQuery = () => 
+  useMediaQuery({ query: "(max-width: 767px)" })
+
+type ChildrenProp = { children : JSX.Element }
+
+const Desktop = ({ children } : ChildrenProp ) => 
+  useDesktopMediaQuery() ? children : null
+const Mobile = ({ children } : ChildrenProp ) => 
+  useMobileMediaQuery() ? children : null
+
+type Props = {
+  desktop: JSX.Element
+  mobile: JSX.Element
+}
+
+function AdaptiveView({ desktop, mobile }: Props): JSX.Element {
   return (
     <MediaQuery minWidth={768} >
       {(matches: boolean) => matches
-        ? Desktop
-        : Mobile
+        ? desktop
+        : mobile
       }
     </MediaQuery>
   )
