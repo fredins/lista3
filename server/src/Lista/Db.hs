@@ -32,7 +32,6 @@ import           Database.PostgreSQL.Simple.ToField   (Action (Escape, Many),
                                                        ToField, toField)
 import           Database.PostgreSQL.Simple.ToRow     (toRow)
 import           Relude                               hiding (id)
-import           Relude.Extra.Tuple                   (dup)
 import           Servant.Docs                         (ToSample, singleSample,
                                                        toSamples)
 import           Test.QuickCheck                      (Arbitrary, arbitrary,
