@@ -74,11 +74,6 @@ main = do
 runApplication :: Application -> IO ()
 runApplication app = do
   let settings = setPort 4000 defaultSettings
-    -- corsMiddleware = (cors . const) $ Just simpleCorsResourcePolicy
-    --   { corsOrigins        = Just (["http://192.168.68.114:3000", "http://localhost:3000", "http://localhost:3000/", "https://lista.fredin.org"], True)
-    --   , corsRequestHeaders = ["Content-Type"]
-    --   , corsMethods        = ["OPTIONS", "GET", "PUT", "POST"]
-    --   }
   tls <- liftA2 tlsSettings (getDataFileName "./ssl/cert.pem") $ getDataFileName "./ssl/key.pem"
   runTLS tls settings app
 
@@ -140,7 +135,6 @@ server pool mgr oidcEnv = pure Homepage
 handleSuccessfulLoggedIn :: Pool Connection -> AuthInfo -> Handler SuccessPage
 handleSuccessfulLoggedIn pool AuthInfo{..} = do
   sessionKey <- decodeUtf8 <$> liftIO genRandomBS
-
   -- Check if new user and act accordingly
   liftIO . withResource pool $ \conn -> do
     -- Get/create user
@@ -176,15 +170,24 @@ handleAuthenticate pool (Just sessionKey) = do
   pure $ addHeader cookie userDetails
 
 type PrivateApi = "userDetails" :> Get '[JSON] UserDetails
+
              :<|> "lists"       :> Get '[JSON] [List]
-             :<|> "newList"     :> QueryParam "name" Text :> Get '[JSON] NoContent
+
+             :<|> "newList"     :> QueryParam "name" Text
+                                :> Get '[JSON] List
+
              :<|> "todos"       :> QueryParam "listId" UUID
                                 :> QueryParam "active" Bool
                                 :> Get '[JSON] [Todo]
+
              :<|> "newTodo"     :> ReqBody '[JSON] NewTodo
                                 :> Post '[JSON] NoContent
+
              :<|> "updateTodo"  :> ReqBody '[JSON] Todo
                                 :> Post '[JSON] NoContent
+
+             :<|> "deleteList"  :> QueryParam' '[Required] "listId" UUID
+                                :> Get '[JSON] NoContent
 
 
 privateServer :: Pool Connection -> Session -> Server PrivateApi
@@ -194,6 +197,7 @@ privateServer pool Session{..} = userDetails
                             :<|> todos
                             :<|> newTodo
                             :<|> updateTodo
+                            :<|> deleteList
   where
   userDetails :: Handler UserDetails
   userDetails = do
@@ -203,7 +207,7 @@ privateServer pool Session{..} = userDetails
   lists :: Handler [List]
   lists = liftIO $ withResource pool (`selectAllLists` userId)
 
-  newList :: Maybe Text -> Handler NoContent
+  newList :: Maybe Text -> Handler List
   newList mname = do
     n <- maybeToRightM (preconditionFailedErr "Missing query param name.") mname
 
@@ -216,9 +220,10 @@ privateServer pool Session{..} = userDetails
     -- Create list and listAccess
     liftIO . withResource pool $ \conn -> do
       listId <- nextRandom
-      insertList' conn List {id=listId, name=n}
+      let newList = List {id=listId, name=n}
+      insertList' conn newList
       insertListAccess conn ListAccess {listId=listId, userId=userId}
-    pure NoContent
+      pure newList
 
   todos :: Maybe UUID -> Maybe Bool -> Handler [Todo]
   todos mlistId mactive = do
@@ -239,6 +244,11 @@ privateServer pool Session{..} = userDetails
       liftIO $ withResource pool (`D.updateTodo` todo)
       pure NoContent
 
+  deleteList :: UUID -> Handler NoContent
+  deleteList listId = do
+    liftIO $ withResource pool (`D.deleteList` listId)
+    pure NoContent
+
 userToUserDetails :: User -> UserDetails
 userToUserDetails User{name, email} = UserDetails {name=name, email=email}
 
@@ -252,3 +262,9 @@ instance ToJSON UserDetails
 newtype UUID' = UUID'
   { id :: UUID
   } deriving (Show, Generic)
+
+corsMiddleware = (cors . const) $ Just simpleCorsResourcePolicy
+  { corsOrigins        = Just (["http://localhost:3000"], True)
+  , corsRequestHeaders = ["Content-Type"]
+  , corsMethods        = ["OPTIONS", "GET", "PUT", "POST"]
+  }

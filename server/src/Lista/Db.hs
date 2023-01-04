@@ -32,6 +32,7 @@ import           Database.PostgreSQL.Simple.ToField   (Action (Escape, Many),
                                                        ToField, toField)
 import           Database.PostgreSQL.Simple.ToRow     (toRow)
 import           Relude                               hiding (id)
+import           Relude.Extra.Tuple                   (dup)
 import           Servant.Docs                         (ToSample, singleSample,
                                                        toSamples)
 import           Test.QuickCheck                      (Arbitrary, arbitrary,
@@ -236,6 +237,14 @@ insertList conn userId name = insertList' conn . (`List` name) =<< nextRandom
 insertList' :: Connection -> List -> IO ()
 insertList' conn = void . execute conn "insert into lists values (?, ?)"
 
+deleteList :: Connection -> UUID -> IO ()
+deleteList conn listId = void $ execute conn
+  [sql|
+    delete from listAccess where listId=?;
+    delete from todos where listId=?;
+    delete from lists where id=?
+  |] (listId, listId, listId)
+
 ---------------------------------------------
 -- Todo
 ---------------------------------------------
@@ -333,8 +342,6 @@ fromString x = case ST.toLower x of
   "red"    -> Red
   "green"  -> Green
   err      -> error err
-
-
 
 ---------------------------------------------
 -- Other
