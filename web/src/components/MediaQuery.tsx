@@ -1,14 +1,6 @@
 import MediaQuery, { useMediaQuery } from 'react-responsive'
 
-export {
-  AdaptiveView,
-  useDesktopMediaQuery,
-  useMobileMediaQuery,
-  Desktop,
-  Mobile,
-}
-
-const desktopMinWidth = 640
+const desktopMinWidth = 768
 const mobileMaxWidth = desktopMinWidth - 1
 
 const useDesktopMediaQuery = () =>
@@ -37,4 +29,12 @@ function AdaptiveView({ desktop, mobile }: Props): JSX.Element {
       }
     </MediaQuery>
   )
+}
+
+export {
+  AdaptiveView,
+  useDesktopMediaQuery,
+  useMobileMediaQuery,
+  Desktop,
+  Mobile,
 }

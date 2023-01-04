@@ -1,14 +1,3 @@
-export {
-  authenticate,
-  fetchLists,
-  createList,
-  fetchAllTodos,
-  fetchActiveTodos,
-  fetchCompletedTodos,
-  createNewTodo,
-  updateTodo,
-}
-
 // Production
 // const server = "https://lista.fredin.org/server"
 // Development
@@ -28,16 +17,21 @@ async function fetchLists(): Promise<[List]> {
   return res.json()
 }
 
-async function createList(name: string) {
-  const { status, ok } = await fetch(`${privateServer}/newList?name=${name}`, {
+async function createList(name: string): Promise<List> {
+  const res = await fetch(`${privateServer}/newList?name=${name}`, {
     credentials: 'include'
   })
-  if (status === 412){
-    throw new Error(`List with name ${name} already exists ` + status)
+  if (res.status === 412){
+    throw new Error(`List with name ${name} already exists ` + res.status)
   }
-  if (!ok){
-    throw new Error(`Error status: ` + status)
+  if (!res.ok){
+    throw new Error(`Error status: ` + res.status)
   }
+  return res.json()
+}
+
+async function deleteList({ id } : List): Promise<Response> {
+  return fetch(`${privateServer}/deleteList?listId=${id}`) 
 }
 
 async function fetchAllTodos(listId: Id): Promise<Todo[]> {
@@ -61,7 +55,7 @@ async function fetchCompletedTodos(listId: Id): Promise<Todo[]> {
   return res.json()
 }
 
-async function createNewTodo(newTodo: NewTodo): Promise<Response> {
+async function createTodo(newTodo: NewTodo): Promise<Response> {
   return fetch(`${privateServer}/newTodo`,
     {
       method: 'POST', 
@@ -88,4 +82,14 @@ async function updateTodo(todo: Todo): Promise<Response> {
   )
 }
 
-
+export {
+  authenticate,
+  fetchLists,
+  createList,
+  fetchAllTodos,
+  fetchActiveTodos,
+  fetchCompletedTodos,
+  createTodo,
+  updateTodo,
+  deleteList,
+}

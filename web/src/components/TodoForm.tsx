@@ -19,7 +19,7 @@ export default function TodoForm({todo, onExit, onSubmit, text, setText }: Props
       onSubmit={curry(onSubmit)({...todo, text: text, color: color})}
     >
     <div
-      className="static flex items-center border border-gray-300 rounded p-2 bg-white"
+      className="static flex items-center border border-zinc-300 rounded p-2 bg-white"
     >
     <input
       value={text}
@@ -33,7 +33,7 @@ export default function TodoForm({todo, onExit, onSubmit, text, setText }: Props
       className="flex flex-row justify-between space-x-1 mt-1"
     >
     <select
-      className="border border-gray-300 rounded-sm drop-shadow-sm outline-none 
+      className="border border-zinc-300 rounded-sm drop-shadow-sm outline-none 
                  bg-white"
       defaultValue={color}
       onChange={e => setColor(e.target.value as Color)}
@@ -49,12 +49,12 @@ export default function TodoForm({todo, onExit, onSubmit, text, setText }: Props
       className="space-x-1"
     >
     <button
-      className="px-2 border border-gray-300 rounded-sm drop-shadow-sm"
+      className="px-2 border border-zinc-300 rounded-sm drop-shadow-sm"
       type="button"
       onClick={onExit}
     >Avbryt</button>
     <button
-      className="px-2 border border-gray-300 rounded-sm drop-shadow-sm"
+      className="px-2 border border-zinc-300 rounded-sm drop-shadow-sm"
     >Spara
     </button>
     </div>

@@ -35,11 +35,9 @@ export default function TodoList(
     refetchInterval: 1000*6, // refetch every 10s
   })
   
-  if (!mtodos) return <Spinner />
-
   return (
     <div
-      className={`sm:border w-96 drop-shadow-sm ${className}`}
+      className={`md:border drop-shadow-sm ${className}`}
     >
     <Desktop>  
     <div
@@ -50,7 +48,7 @@ export default function TodoList(
     </div>
     </Desktop>
     <div
-      className="divide-y divide-gray-300 p-4"
+      className="divide-y divide-zinc-300 p-4"
     >
     <AddTodo
       listId={activeList.id}
@@ -65,7 +63,7 @@ export default function TodoList(
           mode={getMode(t.id)}
           onModeChange={curry(handleModeChange)(t.id)}
         />
-      ), mtodos)
+      ), mtodos ?? [])
     }
     </div>
     </div>

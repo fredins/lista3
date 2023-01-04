@@ -1,11 +1,11 @@
 import { useEffect } from 'react'
 import { FaCog } from 'react-icons/fa'
-import { GoPerson } from 'react-icons/go'
+import { BsPersonXFill, BsPersonCheckFill } from 'react-icons/bs'
 import { FiMenu } from 'react-icons/fi'
 import { authenticate } from '../api'
 import { useAuth } from './Auth'
 import { Maybe, just } from '../util'
-import { Mobile } from './MediaQuery'
+import { Desktop, Mobile } from './MediaQuery'
 import { useSidebar } from './useSidebar'
 import { useActiveList } from './useActiveList'
 
@@ -15,7 +15,7 @@ export default function MenuBar(){
 
   // Automatically login user if sessionKey is present
   useEffect(() => {
-    if(auth.status === "loggedIn") return
+    if(auth.isLoggedIn) return
     const msessionKey = getCookie("sessionKey")
     if(!msessionKey) return
 
@@ -31,7 +31,7 @@ export default function MenuBar(){
 
   return (
   <div
-   className="bg-zinc-50 w-full flex justify-between px-4 text-xl py-1 
+   className="bg-zinc-50 w-full flex justify-between px-4 text-3xl md:text-xl py-1 
              border-b border-zinc-300"
   >
 
@@ -50,7 +50,7 @@ export default function MenuBar(){
   <FiMenu/> 
   </div>
 
-  { activeList && <p className='ml-3'> { activeList.name } </p> }
+  { activeList && <p className='ml-3 text-2xl'> { activeList.name } </p> }
   </>
   </Mobile> 
   </div>
@@ -65,15 +65,19 @@ export default function MenuBar(){
   className="flex items-center space-x-1 cursor-pointer hover:underline 
              underline-offset-1 text-blue-600 hover:text-blue-800"
   >
-  <GoPerson />
-  <p>{ auth.status === "loggedOut" ? "Logga in" : auth.userDetails!.name }</p>
+  { auth.isLoggedIn ? <BsPersonCheckFill /> : <BsPersonXFill /> }
+  <Desktop>
+  <p>{ auth.isLoggedIn ? auth.userDetails!.name : "Logga in"}</p>
+  </Desktop>
   </div>
 
   <div className="flex items-center space-x-1 cursor-pointer hover:underline 
                   underline-offset-1 text-blue-600 hover:text-blue-800"
   >
   <FaCog />
+  <Desktop>
   <p>Inställningar</p>
+  </Desktop> 
   </div>
 
   </div>
@@ -83,7 +87,7 @@ export default function MenuBar(){
   
 
   async function login(){
-    if (auth.status === "loggedIn") return
+    if (auth.isLoggedIn) return
     const mcookie = getCookie("sessionKey")
     const msessionKey = mcookie ? mcookie : await createNewSession()
     if(!msessionKey) return 

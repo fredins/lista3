@@ -9,4 +9,7 @@
   button {
     @apply cursor-pointer
   }
+  span {
+    @apply inline-block
+  }
 };

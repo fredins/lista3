@@ -2,7 +2,7 @@ import { AiOutlinePlus } from 'react-icons/ai'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 
 import TodoForm from './TodoForm'
-import { createNewTodo } from '../api'
+import { createTodo } from '../api'
 import { nil } from '../util'
 import { useState } from 'react'
 
@@ -20,7 +20,7 @@ export default function AddTodo({ listId, mode, onModeChange }: Props) {
   const queryClient = useQueryClient()
   const [ text, setText ] = useState("")
   
-  const createTodoMutation = useMutation(newTodo => createNewTodo(newTodo), {
+  const createTodoMutation = useMutation(newTodo => createTodo(newTodo), {
     onMutate: async (newTodo: NewTodo) => {
       queryClient.setQueryData(["todos", listId], (prev: Todo[] | undefined) => prev ? 
         [...prev, {...newTodo, id: "optimistic-todo"}] : undefined)
@@ -54,7 +54,7 @@ export default function AddTodo({ listId, mode, onModeChange }: Props) {
   function Normal() {
     return (
       <div
-        className="flex items-center text-gray-400 hover:text-sky-500 pb-2 cursor-pointer text-lg"
+        className="flex items-center text-zinc-400 hover:text-sky-500 pb-2 cursor-pointer text-lg"
         onClick={() => onModeChange(mode, "editing")}
       >
         <AiOutlinePlus

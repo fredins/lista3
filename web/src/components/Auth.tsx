@@ -1,14 +1,6 @@
 import { useMemo, createContext, useState, useContext } from 'react'
 
-export type {
-  AuthContext,
-  AuthContextState, 
-}
 
-export {
-  AuthProvider,
-  useAuth
-}
 
 type AuthContext = {
   login: (_ : UserDetails) => void
@@ -16,7 +8,7 @@ type AuthContext = {
 } & AuthContextState
 
 type AuthContextState = {
-  status       : 'loggedOut' | 'loggedIn'
+  isLoggedIn   : boolean 
   userDetails? : UserDetails
 }
 
@@ -28,15 +20,15 @@ function useAuth(){
 
 function AuthProvider(props: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthContextState>({
-    status: 'loggedOut'
+    isLoggedIn: false
   })
 
   const login = (userDetails : UserDetails) => setState({ 
-      status: 'loggedIn',
+      isLoggedIn: true,
       userDetails: userDetails,
     })
 
-  const logout = () => setState({ status: 'loggedOut' })
+  const logout = () => setState({ isLoggedIn: false })
   
 
   const contextValue = useMemo(
@@ -51,4 +43,12 @@ function AuthProvider(props: { children: React.ReactNode }) {
 
   return <authContext.Provider value={contextValue} children={props.children} />
 }
+export type {
+  AuthContext,
+  AuthContextState, 
+}
 
+export {
+  AuthProvider,
+  useAuth
+}

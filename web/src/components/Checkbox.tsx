@@ -15,7 +15,7 @@ export default function Checkbox({ active, onClick, color }: Props): JSX.Element
         border rounded-[1px] inline-block w-6 h-6 min-w-[1.5rem] mx-2 
         shadow-inner-eq cursor-pointer
         ${caseOf_(color,
-        { k: "gray", v: "border-gray-300 shadow-gray-200" },
+        { k: "gray", v: "border-zinc-300 shadow-zinc-200" },
         { k: "blue", v: "border-sky-300 shadow-sky-200" },
         { k: "yellow", v: "border-yellow-300 shadow-yellow-200" },
         { k: "red", v: "border-red-300 shadow-red-200" },

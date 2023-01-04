@@ -1,14 +1,5 @@
 import { useMemo, createContext, useState, useContext } from 'react'
 
-export type {
-  SideBarContext
-}
-
-export {
-  SidebarProvider, 
-  useSidebar,
-}
-
 type SideBarContext = {
   sidebar    : boolean
   showSidebar : (_: boolean) => void
@@ -18,7 +9,7 @@ type SideBarContext = {
 const sidebarContext = createContext<SideBarContext>(null!)
 
 function SidebarProvider(props: { children: React.ReactNode }){
-  const [ sidebar, setSidebar] = useState<boolean>(true)
+  const [ sidebar, setSidebar] = useState<boolean>(false)
   const showSidebar = (b: boolean) => setSidebar(b)
 
   const contextValue = useMemo(() => ({
@@ -35,3 +26,11 @@ function useSidebar(){
   return useContext(sidebarContext)
 }
 
+export type {
+  SideBarContext
+}
+
+export {
+  SidebarProvider, 
+  useSidebar,
+}

@@ -48,7 +48,7 @@ export default function SharePanel( { className } : ClassName ){
   <label htmlFor="email-input">Mejladdress </label>
   <input 
    id="email-input"
-   className="block px-2 text-lg border border-gray-300 outline-none
+   className="block px-2 text-lg border border-zinc-300 outline-none
               w-64"
    type='email'
    required={true}
@@ -56,7 +56,7 @@ export default function SharePanel( { className } : ClassName ){
   </div>
   <div className="flex justify-end">
   <button
-    className="px-2 border border-gray-300 rounded-sm drop-shadow-sm 
+    className="px-2 border border-zinc-300 rounded-sm drop-shadow-sm 
                float-right"
   > Dela
   </button>
