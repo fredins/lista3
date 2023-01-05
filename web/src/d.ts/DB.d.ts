@@ -30,6 +30,12 @@ type TodosRequest = {
   listId : Id
 }
 
+type InvitationDetails = {
+  id        : Id
+  listId    : Id
+  owner     : string
+  listName  : string
+}
 
 type NewList = Omit<List, "id">
 

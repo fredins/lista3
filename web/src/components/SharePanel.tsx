@@ -1,11 +1,14 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { map } from "ramda";
 import { useEffect, useMemo, useState } from "react";
+import { createInvitation } from "../api";
 import { ClassName, Maybe } from "../util";
+import { useAuth } from "./Auth";
 import { useActiveList } from "./useActiveList";
 
 
 export default function SharePanel( { className } : ClassName ){
+  const { userDetails } = useAuth()
   const queryClient = useQueryClient()
   const lists: Maybe<List[]> = queryClient.getQueryData(["lists"])
   if (!lists) throw new Error("SharePanel: lists undefined")
@@ -15,6 +18,7 @@ export default function SharePanel( { className } : ClassName ){
     [activeList]
   )
   const [ shareList, setShareList ] = useState<Maybe<string>>()
+  const [ email, setEmail ] = useState<string>("")
   
   const listOptions = useMemo(() => (
     map<List, JSX.Element>(list => (
@@ -22,6 +26,13 @@ export default function SharePanel( { className } : ClassName ){
     ), lists)
     ), [lists]
   )
+
+  function handleSubmit(){
+    if(!shareList) return
+    if(email === userDetails?.email ) return
+    const { id } : List = JSON.parse(shareList)
+    createInvitation(id, email)
+  }
   
   return (
   <div className={`border-b border drop-shadow-sm ${className}`}>
@@ -30,7 +41,13 @@ export default function SharePanel( { className } : ClassName ){
   >
   Bjud in medlem
   </div>
-  <form className="p-2 text-lg space-y-3">
+  <form 
+    className="p-2 text-lg space-y-3" 
+    onSubmit={e => { 
+      e.preventDefault()
+      handleSubmit()
+    }}
+  >
   <div className="space-y-0">
   <label htmlFor="lista-select">Lista </label>
   <select 
@@ -52,12 +69,13 @@ export default function SharePanel( { className } : ClassName ){
               w-64"
    type='email'
    required={true}
+   value={email}
+   onChange={e => setEmail(e.target.value)}
   /> 
   </div>
   <div className="flex justify-end">
   <button
-    className="px-2 border border-zinc-300 rounded-sm drop-shadow-sm 
-               float-right"
+    className="px-2 border border-zinc-300 rounded-sm drop-shadow-sm"
   > Dela
   </button>
   </div>

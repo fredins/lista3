@@ -82,6 +82,35 @@ async function updateTodo(todo: Todo): Promise<Response> {
   )
 }
 
+async function createInvitation(listId : Id, email : string): Promise<Response>{
+  return fetch(`${privateServer}/newInvitation?listId=${listId}&email=${email}`, {
+    credentials: 'include'
+  })
+}
+
+
+async function fetchInvitations(): Promise<InvitationDetails[]>{
+  const res = await fetch(`${privateServer}/invitations`, {
+    credentials: 'include'
+  })
+
+  return res.json()
+}
+
+
+async function acceptInvitation(invitationsId : Id): Promise<List>{
+  const res = await fetch(`${privateServer}/answerInvitation?invitationsId=${invitationsId}&accept=true`, {
+    credentials: 'include'
+  })
+  return res.json()
+}
+
+async function rejectInvitation(invitationsId : Id): Promise<Response>{
+  return fetch(`${privateServer}/answerInvitation?invitationsId=${invitationsId}&accept=false`, {
+    credentials: 'include'
+  })
+}
+
 export {
   authenticate,
   fetchLists,
@@ -92,4 +121,8 @@ export {
   createTodo,
   updateTodo,
   deleteList,
+  createInvitation,
+  fetchInvitations,
+  acceptInvitation,
+  rejectInvitation,
 }

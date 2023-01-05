@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { Dispatch, memo, SetStateAction, useMemo } from 'react'
 import ListItem from './ListItem'
 import { append, filter, map } from 'ramda'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -8,26 +8,32 @@ import { useActiveList } from './useActiveList'
 import { useSidebar } from './useSidebar'
 
 type Props = {
-  lists : List[]
+  lists       : List[]
   onNewActive : () => void
+  newList     : string
+  setNewList  : (_: string) => void
 }
 
-export default function ListPanel({ lists, onNewActive, className } : Props & ClassName) {
+function ListPanel({ lists, onNewActive, newList, setNewList, className } : Props & ClassName) {
   const queryClient = useQueryClient()
   const { activeList, setActiveList } = useActiveList()
-  const [newList, setNewList] = useState("")
   const { showSidebar } = useSidebar()
 
+  type CreateListMutationArg = {
+    newList   : string 
+    prevLists : List[]
+  }
+
   const createListMutation = useMutation(
-    _ => createList(newList), {
-    onMutate: async (prevLists: List[]) => {
+    ({ newList }: CreateListMutationArg) => createList(newList), {
+    onMutate: async ({ newList, prevLists }) => {
       const optimisticList = {id: nil, name: newList}
       queryClient.setQueryData(["lists"], append(optimisticList, prevLists)) 
       setNewList("")
       setActiveList(optimisticList)
       await queryClient.cancelQueries({ queryKey: ["lists"]})
     },
-    onError: (error: Error, prevLists: List[]) => {
+    onError: (error: Error, { prevLists }) => {
       queryClient.setQueryData(["lists"], prevLists)
       console.log(error.message)
     },
@@ -76,15 +82,18 @@ export default function ListPanel({ lists, onNewActive, className } : Props & Cl
      <form 
        className="flex mb-2"
        onSubmit={e => {
-       e.preventDefault()
-       if(newList === "") return
-       createListMutation.mutate(lists)
-       showSidebar(false)
+         e.preventDefault()
+         if(newList === "") return
+         createListMutation.mutate({newList, prevLists: lists})
+         showSidebar(false)
       }}
      >
      <input
        value={newList}
-       onChange={e => setNewList(e.target.value)}
+       onChange={e => { 
+        e.preventDefault()
+        setNewList(e.target.value)
+       }}
        className="px-2 text-lg border-l border-y border-zinc-300 outline-none w-full"
      />
      <button
@@ -98,3 +107,5 @@ export default function ListPanel({ lists, onNewActive, className } : Props & Cl
 
   )
 }
+
+export default memo(ListPanel)

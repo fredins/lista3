@@ -7,7 +7,6 @@ import UnmemoizedTodo from './TodoItem'
 import AddTodo from './AddTodo'
 import { ClassName, nil } from '../util'
 import { useActiveList } from './useActiveList'
-import Spinner from './Spinner'
 import { Desktop } from './MediaQuery'
 
 type Mode = "normal"
