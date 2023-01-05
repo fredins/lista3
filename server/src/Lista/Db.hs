@@ -15,6 +15,7 @@ import           Data.Aeson                           (FromJSON, ToJSON,
                                                        Value (Object, String),
                                                        object, parseJSON,
                                                        toJSON, (.:), (.=))
+import           Data.Maybe                           (fromJust)
 import           Data.Pool                            (Pool, createPool)
 import qualified Data.Text                            as ST
 import           Data.UUID                            (nil, toASCIIBytes)
@@ -24,8 +25,8 @@ import           Database.PostgreSQL.Simple           (ConnectInfo, Connection,
                                                        FromRow, ToRow, close,
                                                        connect,
                                                        defaultConnectInfo,
-                                                       execute, execute_, query,
-                                                       query_)
+                                                       execute, executeMany,
+                                                       execute_, query, query_)
 import           Database.PostgreSQL.Simple.FromField (FromField, fromField)
 import           Database.PostgreSQL.Simple.SqlQQ     (sql)
 import           Database.PostgreSQL.Simple.ToField   (Action (Escape, Many),
@@ -64,6 +65,17 @@ initDB conn = void $ execute_ conn
       id uuid,
       name text,
       primary key (id)
+    );
+
+    create table if not exists invitations(
+      id uuid,
+      listId uuid,
+      invitedId text,
+      owner text,
+      listName text,
+      primary key (id),
+      foreign key (listId) references lists(id),
+      foreign key (invitedId) references users(id)
     );
 
     create table if not exists listAccess(
@@ -105,7 +117,7 @@ initMockData = void $ connect defaultConnectInfo >>= \conn -> do
 
 deleteTables :: IO ()
 deleteTables = void $ connect defaultConnectInfo >>= flip execute_
-  "drop table if exists todos, lists, users, listAccess, sessions"
+  "drop table if exists todos, lists, users, listAccess, sessions, invitations"
 
 
 ---------------------------------------------
@@ -150,7 +162,6 @@ instance ToRow User
 instance ToSample User where
   toSamples _ =  singleSample $ User "" "name" "name@domain.org"
 
-
 insertUser :: Connection -> User -> IO ()
 insertUser conn = void . execute conn "insert into users values (?, ?, ?)"
 
@@ -158,7 +169,25 @@ selectUserById :: Connection -> Text -> IO (Maybe User)
 selectUserById conn id = listToMaybe <$> query conn
   "select * from users where id=?" id
 
+selectUserByEmail :: Connection -> Text -> IO [User]
+selectUserByEmail conn = query conn "select * from users where email=?"
 
+data UserDetails = UserDetails
+  { name  :: Text
+  , email :: Text
+  } deriving (Show, Generic)
+
+instance ToJSON UserDetails
+
+instance FromJSON UserDetails
+
+instance ToRow UserDetails
+
+instance FromRow UserDetails
+
+selectUserDetailsById :: Connection -> Text -> IO (Maybe UserDetails)
+selectUserDetailsById conn id = listToMaybe <$> query conn
+  "select name, email from users where id=?" id
 
 ---------------------------------------------
 -- ListAccess
@@ -241,8 +270,9 @@ deleteList conn listId = void $ execute conn
   [sql|
     delete from listAccess where listId=?;
     delete from todos where listId=?;
-    delete from lists where id=?
-  |] (listId, listId, listId)
+    delete from lists where id=?;
+    delete from invitations where listId=?
+  |] (listId, listId, listId, listId)
 
 ---------------------------------------------
 -- Todo
@@ -305,6 +335,76 @@ updateTodo :: Connection -> Todo -> IO ()
 updateTodo conn Todo{..} = void $ execute conn
   "update todos set id=?, text=?, active=?, color=? where id=?" (id, text, active, color,
   id)
+
+---------------------------------------------
+-- Invitation
+---------------------------------------------
+
+data Invitation = Invitation
+  { id        :: UUID
+  , listId    :: UUID
+  , invitedId :: Text
+  , owner     :: Text
+  , listName  :: Text
+  } deriving (Show, Generic)
+
+instance FromJSON Invitation
+
+instance ToJSON Invitation
+
+instance FromRow Invitation
+
+instance ToRow Invitation
+
+data InvitationDetails = InvitationDetails
+  { id       :: UUID
+  , listId   :: UUID
+  , owner    :: Text
+  , listName :: Text
+  } deriving (Show, Generic)
+
+instance FromJSON InvitationDetails
+
+instance ToJSON InvitationDetails
+
+instance FromRow InvitationDetails
+
+instance ToRow InvitationDetails
+
+insertInvitation :: Connection -> Text -> UUID -> Text -> IO ()
+insertInvitation conn ownerId listId email = do
+  User { name=owner } <- fromJust <$> selectUserById conn ownerId
+  List { id=listId, name=listName } <- fromJust <$> selectListById conn listId
+  invitationId <- nextRandom
+
+  let mkInvitation User{ id=invitedId } = Invitation
+        { id        = invitationId
+        , listId    = listId
+        , invitedId = invitedId
+        , owner     = owner
+        , listName  = listName
+        }
+
+  invitations <- map mkInvitation <$> selectUserByEmail conn email
+  executeMany conn "insert into invitations values (?, ?, ?, ?, ?)" invitations
+  pure ()
+
+selectInvitationDetails :: Connection -> Text -> IO [InvitationDetails]
+selectInvitationDetails conn = query conn
+  "select id, listId, owner, listName from invitations where invitedId=?"
+
+selectInvitationDetailsById :: Connection -> UUID -> IO (Maybe InvitationDetails)
+selectInvitationDetailsById conn invitationId = listToMaybe <$> query conn
+  "select id, listId, owner, listName from invitations where id=?" invitationId
+
+selectInvitationById :: Connection -> UUID -> IO (Maybe Invitation)
+selectInvitationById conn invitationId = listToMaybe <$> query conn
+  "select * from invitations where id=?" invitationId
+
+deleteInvitation :: Connection -> UUID -> IO ()
+deleteInvitation conn invitationId = void $ execute conn
+    "delete from invitations where id=?" invitationId
+
 
 ---------------------------------------------
 -- Color

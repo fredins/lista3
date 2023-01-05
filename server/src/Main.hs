@@ -2,6 +2,7 @@
 {-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE LambdaCase            #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NamedFieldPuns        #-}
 {-# LANGUAGE OverloadedStrings     #-}
@@ -51,6 +52,8 @@ import           Web.Cookie                       (SetCookie, def, parseCookies,
                                                    setCookieSameSite,
                                                    setCookieSecure,
                                                    setCookieValue)
+
+import           Relude.Unsafe                    (fromJust)
 
 oidcConf :: ByteString -> OidcConf
 oidcConf password = OidcConf
@@ -154,9 +157,12 @@ handleAuthenticate :: Pool Connection -> Maybe Text -> Handler (CookieHeader Use
 handleAuthenticate _    Nothing           =  preconditionFailed "Missing query param sessionKey."
 handleAuthenticate pool (Just sessionKey) = do
   msession <- liftIO . withResource pool $ (`selectSession` sessionKey)
-  Session{sessionKey, userId} <- maybeToRightM (unauthorizedErr "No valid Session for sessionKey.") msession
-  muser <- liftIO . withResource pool $ (`selectUserById` userId)
-  userDetails <- maybeToRightM (serverErrorErr "No User!") (userToUserDetails <$> muser)
+
+  Session{sessionKey, userId} <- maybeToRightM
+   (unauthorizedErr "No valid Session for sessionKey.") msession
+
+  userDetails <- maybeToRightM (serverErrorErr "No User!") =<<
+   (liftIO . withResource pool $ (`selectUserDetailsById` userId))
 
   let cookie = def
        { setCookieName = "sessionKey"
@@ -171,23 +177,33 @@ handleAuthenticate pool (Just sessionKey) = do
 
 type PrivateApi = "userDetails" :> Get '[JSON] UserDetails
 
-             :<|> "lists"       :> Get '[JSON] [List]
+             :<|> "lists" :> Get '[JSON] [List]
 
-             :<|> "newList"     :> QueryParam "name" Text
-                                :> Get '[JSON] List
+             :<|> "newList" :> QueryParam "name" Text
+                            :> Get '[JSON] List
 
-             :<|> "todos"       :> QueryParam "listId" UUID
-                                :> QueryParam "active" Bool
-                                :> Get '[JSON] [Todo]
+             :<|> "todos" :> QueryParam "listId" UUID
+                          :> QueryParam "active" Bool
+                          :> Get '[JSON] [Todo]
 
-             :<|> "newTodo"     :> ReqBody '[JSON] NewTodo
-                                :> Post '[JSON] NoContent
+             :<|> "newTodo" :> ReqBody '[JSON] NewTodo
+                            :> Post '[JSON] NoContent
 
-             :<|> "updateTodo"  :> ReqBody '[JSON] Todo
-                                :> Post '[JSON] NoContent
+             :<|> "updateTodo" :> ReqBody '[JSON] Todo
+                               :> Post '[JSON] NoContent
 
-             :<|> "deleteList"  :> QueryParam' '[Required] "listId" UUID
-                                :> Get '[JSON] NoContent
+             :<|> "deleteList" :> QueryParam' '[Required] "listId" UUID
+                               :> Get '[JSON] NoContent
+
+             :<|> "newInvitation" :> QueryParam' '[Required] "listId" UUID
+                                  :> QueryParam' '[Required] "email" Text
+                                  :> Get '[JSON] NoContent
+
+             :<|> "invitations" :> Get '[JSON] [InvitationDetails]
+
+             :<|> "answerInvitation" :> QueryParam' '[Required] "invitationsId" UUID
+                                      :> QueryParam' '[Required] "accept" Bool
+                                      :> Get '[JSON] (Maybe List)
 
 
 privateServer :: Pool Connection -> Session -> Server PrivateApi
@@ -198,11 +214,14 @@ privateServer pool Session{..} = userDetails
                             :<|> newTodo
                             :<|> updateTodo
                             :<|> deleteList
+                            :<|> newInvitation
+                            :<|> invitations
+                            :<|> answerInvitation
   where
   userDetails :: Handler UserDetails
-  userDetails = do
-    muser <- liftIO $ withResource pool (`selectUserById` userId)
-    maybeToRightM (serverErrorErr "No User!") (userToUserDetails <$> muser)
+  userDetails =
+    maybeToRightM (serverErrorErr "No User!") =<<
+      liftIO (withResource pool (`selectUserDetailsById` userId))
 
   lists :: Handler [List]
   lists = liftIO $ withResource pool (`selectAllLists` userId)
@@ -249,15 +268,25 @@ privateServer pool Session{..} = userDetails
     liftIO $ withResource pool (`D.deleteList` listId)
     pure NoContent
 
-userToUserDetails :: User -> UserDetails
-userToUserDetails User{name, email} = UserDetails {name=name, email=email}
+  newInvitation :: UUID -> Text -> Handler NoContent
+  newInvitation listId email = do
+    liftIO . withResource pool $
+      \conn -> D.insertInvitation conn userId listId email
+    pure NoContent
 
-data UserDetails = UserDetails
-  { name  :: Text
-  , email :: Text
-  } deriving (Show, Generic)
+  invitations :: Handler [InvitationDetails]
+  invitations = liftIO $ withResource pool (`D.selectInvitationDetails` userId)
 
-instance ToJSON UserDetails
+  answerInvitation :: UUID -> Bool -> Handler (Maybe List)
+  answerInvitation invitationsId = \case
+    False -> do
+      liftIO $ withResource pool (`D.deleteInvitation` invitationsId)
+      pure Nothing
+    True -> liftIO . withResource pool $ \conn -> do
+      Invitation{ listId, invitedId } <- fromJust <$> selectInvitationById conn invitationsId
+      deleteInvitation conn invitationsId
+      insertListAccess conn $ ListAccess { listId=listId, userId=invitedId }
+      selectListById conn listId
 
 newtype UUID' = UUID'
   { id :: UUID
