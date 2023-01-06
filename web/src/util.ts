@@ -1,32 +1,5 @@
 import { find, forEach, map } from 'ramda'
 
-export type {
-  Case,
-  Left,
-  Right,
-  Either,
-  Maybe,
-  ClassName,
-}
-
-export {
-  caseOf,
-  caseOf_,
-  caseOfDefault,
-  caseOfDefaultB,
-  nil,
-  singleton,
-  isLeft,
-  isRight,
-  either,
-  lefts,
-  rights,
-  cons,
-  just,
-  omit,
-}
-
-
 type Case<A, B> = {
   k: A
   v: B
@@ -51,7 +24,6 @@ function caseOfDefaultB<B>(def: B, ...cases: Case<Boolean, B>[]): B {
 }
 
 const nil: Id = "00000000-0000-0000-0000-000000000000"
-
 
 function singleton<A>(x: A){ return [x]}
 
@@ -104,4 +76,29 @@ function omit<A extends object, B extends keyof A>(obj: A, ...entries : B[]): A 
 
 type ClassName = { className? : string }
 
+export type {
+  Case,
+  Left,
+  Right,
+  Either,
+  Maybe,
+  ClassName,
+}
+
+export {
+  caseOf,
+  caseOf_,
+  caseOfDefault,
+  caseOfDefaultB,
+  nil,
+  singleton,
+  isLeft,
+  isRight,
+  either,
+  lefts,
+  rights,
+  cons,
+  just,
+  omit,
+}
 

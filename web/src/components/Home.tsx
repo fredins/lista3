@@ -8,7 +8,7 @@ import MenuBar from "./MenuBar";
 import MobileHome from "./MobileHome";
 import { AdaptiveView } from "./MediaQuery";
 import DesktopHome from "./DesktopHome";
-import { cssTransition, Slide, ToastContainer, Zoom } from "react-toastify";
+import { ToastContainer, Zoom } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function Home() {

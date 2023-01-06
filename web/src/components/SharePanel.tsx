@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { map } from "ramda";
 import { useEffect, useMemo, useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { createInvitation } from "../api";
 import { ClassName, Maybe } from "../util";
 import { useAuth } from "./Auth";

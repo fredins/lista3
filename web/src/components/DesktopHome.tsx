@@ -1,6 +1,5 @@
-import { memo, useMemo } from "react"
+import { memo } from "react"
 import { Maybe } from "../util"
-import { useAuth } from "./Auth"
 import InvitationsPanel from "./InvitationsPanel"
 import ListPanel from "./ListPanel"
 import SharePanel from "./SharePanel"
@@ -21,7 +20,6 @@ function DesktopHome({
   lists, newList, setNewList, editing, setEditing, selected, setSelected
 }: Props){
 
-  const { isLoggedIn } = useAuth()
   const { activeList } = useActiveList()
 
   return (

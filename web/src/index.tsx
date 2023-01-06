@@ -7,7 +7,6 @@ import { AuthProvider } from './components/Auth'
 import Home from './components/Home';
 import { ActiveListProvider } from './components/useActiveList';
 import { SidebarProvider } from './components/useSidebar';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const queryClient = new QueryClient()
 
@@ -21,7 +20,6 @@ createRoot(document.getElementById('root')!).render(
   </SidebarProvider>
   </ActiveListProvider>
   </AuthProvider>
-  <ReactQueryDevtools />
   </QueryClientProvider>
   </StrictMode>
 )
