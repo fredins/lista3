@@ -7,6 +7,7 @@ import { AuthProvider } from './components/Auth'
 import Home from './components/Home';
 import { ActiveListProvider } from './components/useActiveList';
 import { SidebarProvider } from './components/useSidebar';
+import { register } from './serviceWorkerRegistration';
 
 const queryClient = new QueryClient()
 
@@ -23,6 +24,9 @@ createRoot(document.getElementById('root')!).render(
   </QueryClientProvider>
   </StrictMode>
 )
+
+// Register service worker
+register()
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
