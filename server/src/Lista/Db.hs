@@ -1,13 +1,14 @@
-{-# LANGUAGE DeriveGeneric         #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE LambdaCase            #-}
-{-# LANGUAGE NamedFieldPuns        #-}
-{-# LANGUAGE NoImplicitPrelude     #-}
-{-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE QuasiQuotes           #-}
-{-# LANGUAGE RecordWildCards       #-}
-{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE DeriveGeneric            #-}
+{-# LANGUAGE DuplicateRecordFields    #-}
+{-# LANGUAGE FlexibleInstances        #-}
+{-# LANGUAGE LambdaCase               #-}
+{-# LANGUAGE NamedFieldPuns           #-}
+{-# LANGUAGE NoImplicitPrelude        #-}
+{-# LANGUAGE NondecreasingIndentation #-}
+{-# LANGUAGE OverloadedStrings        #-}
+{-# LANGUAGE QuasiQuotes              #-}
+{-# LANGUAGE RecordWildCards          #-}
+{-# LANGUAGE ScopedTypeVariables      #-}
 
 module Lista.Db (module Lista.Db) where
 
@@ -15,6 +16,7 @@ import           Data.Aeson                           (FromJSON, ToJSON,
                                                        Value (Object, String),
                                                        object, parseJSON,
                                                        toJSON, (.:), (.=))
+import           Data.Foldable.Extra                  (notNull)
 import           Data.Maybe                           (fromJust)
 import           Data.Pool                            (Pool, createPool)
 import qualified Data.Text                            as ST
@@ -212,6 +214,11 @@ insertListAccess conn = void . execute conn "insert into listAccess values (?, ?
 selectListAccess :: Connection -> Text -> IO [ListAccess]
 selectListAccess conn = query conn "select * from listAccess where userId=?"
 
+checkListAccess :: Connection -> Text -> UUID -> IO Bool
+checkListAccess conn userId listId = notNull <$> (query conn
+  "select * from listAccess where userId=? and listId=?"
+  (userId, listId) :: IO [ListAccess])
+
 ---------------------------------------------
 -- List
 ---------------------------------------------
@@ -375,9 +382,17 @@ insertInvitation :: Connection -> Text -> UUID -> Text -> IO ()
 insertInvitation conn ownerId listId email = do
   User { name=owner } <- fromJust <$> selectUserById conn ownerId
   List { id=listId, name=listName } <- fromJust <$> selectListById conn listId
-  invitationId <- nextRandom
 
-  let mkInvitation User{ id=invitedId } = Invitation
+  let
+    -- Check if user doesn't already have an invitation or access to the list
+    checkUser User{id} = do
+      inv <- selectInvitationByInvitedId conn listId id
+      newMember <- not <$> checkListAccess conn id listId
+      pure (isNothing inv && newMember)
+
+    mkInvitation User{ id=invitedId } = do
+      invitationId <- nextRandom
+      pure Invitation
         { id        = invitationId
         , listId    = listId
         , invitedId = invitedId
@@ -385,13 +400,21 @@ insertInvitation conn ownerId listId email = do
         , listName  = listName
         }
 
-  invitations <- map mkInvitation <$> selectUserByEmail conn email
-  executeMany conn "insert into invitations values (?, ?, ?, ?, ?)" invitations
-  pure ()
+  us <- filterM checkUser =<< selectUserByEmail conn email
+  is <- mapM mkInvitation us
+  void $ executeMany conn "insert into invitations values (?, ?, ?, ?, ?)" is
 
 selectInvitationDetails :: Connection -> Text -> IO [InvitationDetails]
 selectInvitationDetails conn = query conn
   "select id, listId, owner, listName from invitations where invitedId=?"
+
+selectInvitationByInvitedId :: Connection -> UUID -> Text -> IO (Maybe Invitation)
+selectInvitationByInvitedId conn listId invitedId = listToMaybe <$> query conn
+  "select * from invitations where listId=? and invitedId=?" (listId, invitedId)
+
+selectInvitation :: Connection -> UUID -> Text -> IO [Invitation]
+selectInvitation conn listId email = query conn
+  "select * from invitations where listId=? and email=?" (listId, email)
 
 selectInvitationDetailsById :: Connection -> UUID -> IO (Maybe InvitationDetails)
 selectInvitationDetailsById conn invitationId = listToMaybe <$> query conn

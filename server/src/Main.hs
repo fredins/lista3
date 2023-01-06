@@ -270,8 +270,8 @@ privateServer pool Session{..} = userDetails
 
   newInvitation :: UUID -> Text -> Handler NoContent
   newInvitation listId email = do
-    liftIO . withResource pool $
-      \conn -> D.insertInvitation conn userId listId email
+    liftIO . withResource pool $ \conn ->
+        D.insertInvitation conn userId listId email
     pure NoContent
 
   invitations :: Handler [InvitationDetails]
