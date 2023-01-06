@@ -192,6 +192,10 @@ type PrivateApi = "userDetails" :> Get '[JSON] UserDetails
              :<|> "updateTodo" :> ReqBody '[JSON] Todo
                                :> Post '[JSON] NoContent
 
+             :<|> "deleteTodo" :> QueryParam' '[Required] "todoId" UUID
+                               :> Get '[JSON] NoContent
+
+
              :<|> "deleteList" :> QueryParam' '[Required] "listId" UUID
                                :> Get '[JSON] NoContent
 
@@ -202,8 +206,8 @@ type PrivateApi = "userDetails" :> Get '[JSON] UserDetails
              :<|> "invitations" :> Get '[JSON] [InvitationDetails]
 
              :<|> "answerInvitation" :> QueryParam' '[Required] "invitationsId" UUID
-                                      :> QueryParam' '[Required] "accept" Bool
-                                      :> Get '[JSON] (Maybe List)
+                                     :> QueryParam' '[Required] "accept" Bool
+                                     :> Get '[JSON] (Maybe List)
 
 
 privateServer :: Pool Connection -> Session -> Server PrivateApi
@@ -213,6 +217,7 @@ privateServer pool Session{..} = userDetails
                             :<|> todos
                             :<|> newTodo
                             :<|> updateTodo
+                            :<|> deleteTodo
                             :<|> deleteList
                             :<|> newInvitation
                             :<|> invitations
@@ -262,6 +267,11 @@ privateServer pool Session{..} = userDetails
   updateTodo todo = do
       liftIO $ withResource pool (`D.updateTodo` todo)
       pure NoContent
+
+  deleteTodo :: UUID -> Handler NoContent
+  deleteTodo todoId = do
+    liftIO $ withResource pool (`D.deleteTodo` todoId)
+    pure NoContent
 
   deleteList :: UUID -> Handler NoContent
   deleteList listId = do

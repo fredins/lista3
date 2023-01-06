@@ -343,6 +343,9 @@ updateTodo conn Todo{..} = void $ execute conn
   "update todos set id=?, text=?, active=?, color=? where id=?" (id, text, active, color,
   id)
 
+deleteTodo :: Connection -> UUID -> IO ()
+deleteTodo conn = void . execute conn "delete from todos where id=?"
+
 ---------------------------------------------
 -- Invitation
 ---------------------------------------------
