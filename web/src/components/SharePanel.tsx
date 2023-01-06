@@ -35,7 +35,7 @@ export default function SharePanel( { className } : ClassName ){
   }
   
   return (
-  <div className={`border-b border drop-shadow-sm ${className}`}>
+  <div className={`${className}`}>
   <div
   className="bg-zinc-100 h-8 border-b px-2 flex flex-col justify-center text-lg"
   >
@@ -65,12 +65,14 @@ export default function SharePanel( { className } : ClassName ){
   <label htmlFor="email-input">Mejladdress </label>
   <input 
    id="email-input"
-   className="block px-2 text-lg border border-zinc-300 outline-none
-              w-64"
+   className="block px-2 text-lg border border-zinc-300 outline-none w-full"
    type='email'
    required={true}
    value={email}
-   onChange={e => setEmail(e.target.value)}
+   onChange={e => {
+     e.preventDefault()
+     setEmail(e.target.value)
+   }}
   /> 
   </div>
   <div className="flex justify-end">

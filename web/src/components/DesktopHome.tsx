@@ -58,11 +58,12 @@ function DesktopHome({
   <div className='space-y-4 flex-row ml-4'>
   { /* Share Panel */ }
   { lists &&  
-  <SharePanel className='w-fit h-fit' />
+  <SharePanel className='w-fit h-fit border-b border drop-shadow-sm' />
   }
 
   { /* Invitations Panel */ }
   <InvitationsPanel
+    className="border-b border drop-shadow-sm"
     setNewList={setNewList}
   /> 
   </div>

@@ -6,6 +6,8 @@ import { useActiveList } from "./useActiveList"
 import TodoList from "./TodoList"
 import { memo } from "react"
 import { Maybe } from "../util"
+import SharePanel from "./SharePanel"
+import InvitationsPanel from "./InvitationsPanel"
 
 type Props = {
   lists       : Maybe<List[]>
@@ -34,26 +36,33 @@ function MobileHome({
     animate={{ translateX: 0 }}
     exit={{ translateX: '-100%' }}
     transition={{ ease: "easeOut", duration: 0.15 }}
-    className='absolute inset-0 w-10/12 bg-white z-30 p-2'
+    className='absolute inset-0 w-10/12 bg-white z-30 overflow-y-scroll'
     onClick={e => e.stopPropagation()}
   >
   <div 
     className="flex items-center cursor-pointer hover:underline 
                underline-offset-1 text-blue-600 hover:text-blue-800 text-xl
-               pb-4 
+               mb-2 p-2
               "
     onClick={toggleSidebar}
   >
   <IoMdArrowBack />
   <p>Tillbaka</p>
   </div>
+  <div className="space-y-6">
   <ListPanel
     newList={newList}
     setNewList={setNewList}
     lists={lists ?? []}
     onNewActive={() => setEditing(undefined)}
   />
-  
+  { lists &&  
+  <SharePanel />
+  }
+  <InvitationsPanel
+    setNewList={setNewList}
+  /> 
+  </div>
   </motion.div>
   <motion.div
     key='shadow'
