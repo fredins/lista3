@@ -1,6 +1,26 @@
 {
   "short_name": "Lista",
   "name": "Lista",
+  "icons": [
+    {
+      "src": "icons8-clipboard-list-cute-color-16.png.png",
+      "sizes": "16x16",
+      "type": "image/x-icon",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons8-clipboard-list-cute-color-32.png",
+      "type": "image/png",
+      "sizes": "32x32"  ,
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons8-clipboard-list-cute-color-96.png",
+      "type": "image/png",
+      "sizes": "64x64 96x96 192x192 144x144",
+      "purpose": "any maskable"
+    }
+  ],
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#000000",
