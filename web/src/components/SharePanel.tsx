@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { map } from "ramda";
 import { useEffect, useMemo, useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
 import { createInvitation } from "../api";
 import { ClassName, Maybe } from "../util";
 import { useAuth } from "./Auth";
@@ -20,6 +21,7 @@ export default function SharePanel( { className } : ClassName ){
   const [ shareList, setShareList ] = useState<Maybe<string>>()
   const [ email, setEmail ] = useState<string>("")
   
+  
   const listOptions = useMemo(() => (
     map<List, JSX.Element>(list => (
       <option key={list.id} value={JSON.stringify(list)}>{list.name}</option>
@@ -33,6 +35,7 @@ export default function SharePanel( { className } : ClassName ){
     const { id } : List = JSON.parse(shareList)
     createInvitation(id, email)
     setEmail("")
+    toast.success('Inbjudan skickad!'); 
   }
   
   return (
