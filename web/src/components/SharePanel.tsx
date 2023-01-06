@@ -32,6 +32,7 @@ export default function SharePanel( { className } : ClassName ){
     if(email === userDetails?.email ) return
     const { id } : List = JSON.parse(shareList)
     createInvitation(id, email)
+    setEmail("")
   }
   
   return (
