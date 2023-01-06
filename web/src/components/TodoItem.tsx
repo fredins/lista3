@@ -2,10 +2,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useActiveList } from './useActiveList'
 import TodoForm from './TodoForm'
 import Checkbox from './Checkbox'
-import { updateTodo } from '../api'
-import { map } from 'ramda'
+import { deleteTodo, updateTodo } from '../api'
+import { filter, map } from 'ramda'
 import { omit } from '../util'
 import { useState } from 'react'
+import { RxCross2 } from 'react-icons/rx'
 
 type Mode = "normal"
           | "selected"
@@ -32,6 +33,18 @@ export default function TodoItem({ todo, mode, onModeChange }: Props) : JSX.Elem
       await queryClient.cancelQueries(["todos"])
     }
   })
+  
+  const deleteTodoMutation = useMutation(deleteTodo, {
+    onMutate: async (todo: Todo) => {
+      queryClient.setQueryData(["todos", activeList.id], 
+        (prev: Todo[] | undefined) => prev 
+          ? filter(t => t.id !== todo.id, prev) 
+          : undefined)
+      await queryClient.cancelQueries(["todos"])
+    }
+  })
+
+  
 
   switch (mode) {
     case "normal":
@@ -70,10 +83,10 @@ export default function TodoItem({ todo, mode, onModeChange }: Props) : JSX.Elem
   function ViewTodo({ todo, mode, onModeChange, className }: Props & { className?: string }): JSX.Element {
     return (
       <div
-        className={`flex text-lg cursor-pointer ${className}`}
+        className={`flex items-center text-lg cursor-pointer ${className}`}
         onClick={handleClick}>
       <span 
-        className="flex items-center py-2" 
+        className="flex py-2" 
         onClick={handleClickCheckbox}
       >
       <Checkbox
@@ -88,6 +101,12 @@ export default function TodoItem({ todo, mode, onModeChange }: Props) : JSX.Elem
       >
         {todo.text}
       </p>
+      <div 
+        className='text-zinc-400 px-2 py-2'
+        onClick={handleClickCross}
+      >
+      <RxCross2 />
+      </div>
       </div>
     )
 
@@ -108,6 +127,11 @@ export default function TodoItem({ todo, mode, onModeChange }: Props) : JSX.Elem
       else if (e.ctrlKey) {
         onModeChange(mode, mode === "normal" ? "selected" : "normal")
       }
+    }
+    
+    function handleClickCross(e: React.MouseEvent<HTMLInputElement>) {
+      if (!(e.shiftKey || e.ctrlKey))
+        deleteTodoMutation.mutate(todo)
     }
   }
 }

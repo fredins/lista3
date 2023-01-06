@@ -82,6 +82,16 @@ async function updateTodo(todo: Todo): Promise<Response> {
   )
 }
 
+
+async function deleteTodo({ id }: Todo): Promise<Response> {
+  return fetch(`${privateServer}/deleteTodo?todoId=${id}`,{
+      credentials: 'include'
+    }
+  )
+}
+
+
+
 async function createInvitation(listId : Id, email : string): Promise<Response>{
   return fetch(`${privateServer}/newInvitation?listId=${listId}&email=${email}`, {
     credentials: 'include'
@@ -125,4 +135,5 @@ export {
   fetchInvitations,
   acceptInvitation,
   rejectInvitation,
+  deleteTodo,
 }
