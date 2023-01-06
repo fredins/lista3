@@ -13,7 +13,7 @@ export default function Checkbox({ active, onClick, color }: Props): JSX.Element
     <label
       className={`
         border rounded-[1px] inline-block w-6 h-6 min-w-[1.5rem] mx-2 
-        shadow-inner-eq cursor-pointer
+        shadow-inner-eq-3 cursor-pointer
         ${caseOf_(color,
         { k: "gray", v: "border-zinc-300 shadow-zinc-200" },
         { k: "blue", v: "border-sky-300 shadow-sky-200" },

@@ -6,7 +6,9 @@ module.exports = {
   theme: {
     extend: {
       boxShadow: {
-        'inner-eq': 'inset 0 0 4px 0 rgb(0 0 0 / 0.05)',
+        'inner-eq-1': 'inset 0 0 4px 0 rgb(0 0 0 / 0.05)',
+        'inner-eq-2': 'inset 0 0 8px 0 rgb(0 0 0 / 0.05)',
+        'inner-eq-3': 'inset 0 0 12px 0 rgb(0 0 0 / 0.05)',
       },
     },
   },
