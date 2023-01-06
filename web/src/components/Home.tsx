@@ -30,6 +30,7 @@ export default function Home() {
   return (
   <div>
   <MenuBar />
+  { isLoggedIn  ?
   <AdaptiveView 
     desktop={ <DesktopHome
                 lists={lists}
@@ -52,6 +53,10 @@ export default function Home() {
              />
     }
   />
+  :
+  <p className="p-2 mt-10 flex justify-center text-lg"
+  >Logga in för att använda applikationen</p>
+  }
   </div>
   )
 }

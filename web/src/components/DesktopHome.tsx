@@ -32,15 +32,13 @@ function DesktopHome({
   { /* Left column */ }
   <div className='space-y-4 flex-row'>
   { /* List Panel */ }
-  { isLoggedIn &&
-    <ListPanel
-      className='md:border bg-zinc-50 rounded-sm drop-shadow-sm w-52'
-      newList={newList}
-      setNewList={setNewList}
-      lists={lists ?? []}
-      onNewActive={() => setEditing(undefined)}
-    />
-  }
+  <ListPanel
+    className='md:border bg-zinc-50 rounded-sm drop-shadow-sm w-52'
+    newList={newList}
+    setNewList={setNewList}
+    lists={lists ?? []}
+    onNewActive={() => setEditing(undefined)}
+  />
   </div>
 
   { /* Middle column */ }
