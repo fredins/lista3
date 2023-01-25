@@ -31,7 +31,7 @@ export default function MenuBar(){
 
   return (
   <div
-   className="bg-zinc-50 w-full flex justify-between px-4 text-3xl md:text-xl py-1 
+   className="bg-zinc-100 w-full flex justify-between px-4 text-3xl md:text-xl py-1 
              border-b border-zinc-300"
   >
 

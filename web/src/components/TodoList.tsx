@@ -40,7 +40,7 @@ export default function TodoList(
     >
     <Desktop>  
     <div
-    className="bg-zinc-50 h-8 border-b px-2 flex flex-col justify-center 
+    className="bg-zinc-100 h-8 border-b px-2 flex flex-col justify-center 
                relative text-lg"
     >
     { activeList.name }

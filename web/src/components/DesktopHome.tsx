@@ -31,7 +31,7 @@ function DesktopHome({
   <div className='space-y-4 flex-row'>
   { /* List Panel */ }
   <ListPanel
-    className='md:border bg-zinc-50 rounded-sm drop-shadow-sm w-52'
+    className='md:border bg-zinc-100 rounded-sm drop-shadow-sm w-52'
     newList={newList}
     setNewList={setNewList}
     lists={lists ?? []}
