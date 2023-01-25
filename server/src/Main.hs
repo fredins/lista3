@@ -57,7 +57,7 @@ import           Relude.Unsafe                    (fromJust)
 
 oidcConf :: ByteString -> OidcConf
 oidcConf password = OidcConf
-  { redirectUri = "https://lista.fredin.org/server/login/cb"
+  { redirectUri = "https://server-lista.fredin.org/server/login/cb"
   , clientId = "223213082722-843t5m7qmtevvlor7u3vmn3gophp22eq.apps.googleusercontent.com"
   , clientPassword = password
   }

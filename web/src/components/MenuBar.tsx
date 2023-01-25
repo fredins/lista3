@@ -96,10 +96,10 @@ export default function MenuBar(){
   }     
   
   async function createNewSession(): Promise<Maybe<string>>{
-    const win = window.open("https://lista.fredin.org/server/login", "_blank", "toolbar=0,location=0,menubar=0")
+    const win = window.open("https://server-lista.fredin.org/server/login", "_blank", "toolbar=0,location=0,menubar=0")
     let msessionKey: Maybe<string>;
     window.addEventListener("message", event => {
-      if(event.origin !== "https://lista.fredin.org") return
+      if(event.origin !== "https://server-lista.fredin.org") return
       msessionKey = just(event.data)
     })
     return new Promise(resolve => {
